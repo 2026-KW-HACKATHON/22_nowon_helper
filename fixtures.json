@@ -1,0 +1,234 @@
+{
+  "_readme": "Реальные примеры ответов всех endpoint'ов. Один и тот же файл питает мок-сервер, seed базы и тесты фронтенда. Координаты — район 월계동 у Кванунского университета. Цифры совпадают с макетом: приоритет 78, 13 подтверждений, 32 метра.",
+
+  "POST /api/reports/nearby": {
+    "request": {
+      "lat": 37.62012,
+      "lng": 127.05981,
+      "category": "broken_sidewalk"
+    },
+    "response": {
+      "radius_m": 50,
+      "duplicate": {
+        "id": "b3f1c2a4-1042-4a77-9c11-8d2e5f7a1042",
+        "category": "broken_sidewalk",
+        "severity": "high",
+        "status": "in_progress",
+        "lat": 37.61987,
+        "lng": 127.05954,
+        "address": "월계동 광운로 20 앞",
+        "distance_m": 32,
+        "priority_score": 78,
+        "priority_breakdown": { "confirmations": 30, "severity": 35, "duration": 3, "impact": 10 },
+        "confirmation_count": 12,
+        "affected_groups": ["wheelchair", "elderly"],
+        "photos": {
+          "before_thumb_url": "https://storage.example/thumb/1042.jpg",
+          "before_url": "https://storage.example/full/1042.jpg",
+          "after_url": null
+        },
+        "created_at": "2026-09-13T04:12:00Z",
+        "resolved_at": null,
+        "confirmed_by_me": false
+      }
+    },
+    "response_when_no_duplicate": {
+      "radius_m": 50,
+      "duplicate": null
+    }
+  },
+
+  "POST /api/reports/:id/confirm": {
+    "headers": { "X-Device-Id": "9f2c4e18-0b6a-4d3e-8f51-7c9a2b4d6e80" },
+    "response": {
+      "previous_confirmation_count": 12,
+      "previous_priority_score": 76,
+      "report": {
+        "id": "b3f1c2a4-1042-4a77-9c11-8d2e5f7a1042",
+        "category": "broken_sidewalk",
+        "severity": "high",
+        "status": "in_progress",
+        "lat": 37.61987,
+        "lng": 127.05954,
+        "address": "월계동 광운로 20 앞",
+        "priority_score": 78,
+        "priority_breakdown": { "confirmations": 30, "severity": 35, "duration": 3, "impact": 10 },
+        "confirmation_count": 13,
+        "affected_groups": ["wheelchair", "elderly"],
+        "photos": {
+          "before_thumb_url": "https://storage.example/thumb/1042.jpg",
+          "before_url": "https://storage.example/full/1042.jpg",
+          "after_url": null
+        },
+        "created_at": "2026-09-13T04:12:00Z",
+        "resolved_at": null,
+        "confirmed_by_me": true
+      }
+    },
+    "response_when_already_confirmed": {
+      "status_code": 409,
+      "error": { "code": "already_confirmed", "message": "이미 확인하신 문제입니다." }
+    }
+  },
+
+  "GET /api/reports?bbox=127.052,37.615,127.068,37.626": {
+    "response": {
+      "counts": { "new": 3, "in_progress": 4, "resolved": 1 },
+      "reports": [
+        {
+          "id": "b3f1c2a4-1042-4a77-9c11-8d2e5f7a1042",
+          "category": "broken_sidewalk",
+          "severity": "high",
+          "status": "in_progress",
+          "lat": 37.6199,
+          "lng": 127.0595,
+          "address": "월계동 광운로 20 앞",
+          "priority_score": 78,
+          "confirmation_count": 13,
+          "affected_groups": ["wheelchair", "elderly"],
+          "photos": { "before_thumb_url": "https://storage.example/thumb/1042.jpg", "before_url": null, "after_url": null },
+          "created_at": "2026-09-13T04:12:00Z",
+          "resolved_at": null,
+          "confirmed_by_me": true
+        },
+        {
+          "id": "c8a2d5e1-1077-4b32-9e44-2a6f8c1b3d55",
+          "category": "blocked_ramp",
+          "severity": "medium",
+          "status": "new",
+          "lat": 37.6221,
+          "lng": 127.0563,
+          "address": "월계로 3 횡단보도",
+          "priority_score": 52,
+          "confirmation_count": 8,
+          "affected_groups": ["wheelchair"],
+          "photos": { "before_thumb_url": "https://storage.example/thumb/1077.jpg", "before_url": null, "after_url": null },
+          "created_at": "2026-09-11T23:40:00Z",
+          "resolved_at": null,
+          "confirmed_by_me": false
+        },
+        {
+          "id": "e1b7f3c9-1039-4c18-8a72-5d3e9f2a7c11",
+          "category": "fallen_tree",
+          "severity": "medium",
+          "status": "in_progress",
+          "lat": 37.6172,
+          "lng": 127.0629,
+          "address": "초안산로 가로수",
+          "priority_score": 39,
+          "confirmation_count": 6,
+          "affected_groups": [],
+          "photos": { "before_thumb_url": "https://storage.example/thumb/1039.jpg", "before_url": null, "after_url": null },
+          "created_at": "2026-09-15T08:05:00Z",
+          "resolved_at": null,
+          "confirmed_by_me": false
+        },
+        {
+          "id": "a4d9c6b2-1012-4e55-91f3-6b8a4c2d9e73",
+          "category": "blocked_ramp",
+          "severity": "low",
+          "status": "new",
+          "lat": 37.6184,
+          "lng": 127.0601,
+          "address": "광운로 12 경사로",
+          "priority_score": 24,
+          "confirmation_count": 2,
+          "affected_groups": ["stroller"],
+          "photos": { "before_thumb_url": "https://storage.example/thumb/1012.jpg", "before_url": null, "after_url": null },
+          "created_at": "2026-09-16T11:20:00Z",
+          "resolved_at": null,
+          "confirmed_by_me": false
+        },
+        {
+          "id": "f6e3a1d8-0845-4d91-b2c7-9e1f5a3c8b40",
+          "category": "broken_facility",
+          "severity": "low",
+          "status": "resolved",
+          "lat": 37.6243,
+          "lng": 127.0558,
+          "address": "월계역 2번 출구 점자블록",
+          "priority_score": 18,
+          "confirmation_count": 3,
+          "affected_groups": ["visually_impaired"],
+          "photos": {
+            "before_thumb_url": "https://storage.example/thumb/0845.jpg",
+            "before_url": "https://storage.example/full/0845.jpg",
+            "after_url": "https://storage.example/full/0845-after.jpg"
+          },
+          "created_at": "2026-09-08T02:15:00Z",
+          "resolved_at": "2026-09-16T06:30:00Z",
+          "confirmed_by_me": true
+        }
+      ]
+    }
+  },
+
+  "GET /api/reports/:id": {
+    "response": {
+      "id": "b3f1c2a4-1042-4a77-9c11-8d2e5f7a1042",
+      "category": "broken_sidewalk",
+      "severity": "high",
+      "status": "in_progress",
+      "lat": 37.61987,
+      "lng": 127.05954,
+      "address": "월계동 광운로 20 앞",
+      "priority_score": 78,
+      "priority_breakdown": { "confirmations": 30, "severity": 35, "duration": 3, "impact": 10 },
+      "confirmation_count": 13,
+      "affected_groups": ["wheelchair", "elderly"],
+      "photos": {
+        "before_thumb_url": "https://storage.example/thumb/1042.jpg",
+        "before_url": "https://storage.example/full/1042.jpg",
+        "after_url": null
+      },
+      "created_at": "2026-09-13T04:12:00Z",
+      "resolved_at": null,
+      "confirmed_by_me": true,
+      "status_log": [
+        { "from_status": null, "to_status": "new", "note": null, "created_at": "2026-09-13T04:12:00Z" },
+        { "from_status": "new", "to_status": "in_progress", "note": "노원구 도로과", "created_at": "2026-09-16T01:30:00Z" }
+      ]
+    }
+  },
+
+  "POST /api/reports": {
+    "request": {
+      "lat": 37.62012,
+      "lng": 127.05981,
+      "category": "broken_sidewalk",
+      "severity": "medium",
+      "affected_groups": ["elderly"],
+      "photo_url": "https://storage.example/full/1103.jpg",
+      "photo_thumb_url": "https://storage.example/thumb/1103.jpg"
+    },
+    "response_note": "Тот же объект Report. Новая заявка: confirmation_count = 1, status = new, confirmed_by_me = true, priority_score = 2.5 + 22 + 0 + 5 = 30 (округляется до целого)."
+  },
+
+  "POST /api/classify": {
+    "response": { "category": "broken_sidewalk", "confidence": 0.92 },
+    "response_when_service_down": { "category": null, "confidence": 0 },
+    "note": "Отсутствие ответа — не ошибка. Экран 02 просто не показывает подсказку, категорию выбирают кнопками."
+  },
+
+  "POST /api/voice/draft": {
+    "response": {
+      "transcript": "여기 휠체어가 지나가기 어려워요",
+      "category": "blocked_ramp",
+      "affected_groups": ["wheelchair"]
+    },
+    "response_when_service_down": { "transcript": "", "category": null, "affected_groups": [] }
+  },
+
+  "PATCH /api/admin/reports/:id/status": {
+    "request": { "status": "in_progress", "note": "노원구 도로과" },
+    "response_note": "Тот же объект Report с обновлённым статусом и новой записью в status_log."
+  },
+
+  "PATCH /api/admin/reports/:id/resolve": {
+    "request": {
+      "after_photo_url": "https://storage.example/full/1042-after.jpg",
+      "note": "보도블록 교체 완료"
+    },
+    "response_note": "status = resolved, resolved_at проставлен, photos.after_url заполнен. Это финальный кадр демонстрации."
+  }
+}
