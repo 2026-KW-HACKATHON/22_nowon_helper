@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    // Node does not compile .ts files. It just removes the types and
+    // runs the rest. These four options keep our code ready for that:
+    // imports keep the .ts ending, nothing is built, and any syntax
+    // Node cannot simply remove (enum, namespace) is an error here
+    // instead of a crash later.
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "contract/**/*.ts"]
+}
