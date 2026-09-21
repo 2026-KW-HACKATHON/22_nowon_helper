@@ -1,5 +1,5 @@
 {
-  "_readme": "Реальные примеры ответов всех endpoint'ов. Один и тот же файл питает мок-сервер, seed базы и тесты фронтенда. Координаты — район 월계동 у Кванунского университета. Цифры совпадают с макетом: приоритет 78, 13 подтверждений, 32 метра.",
+  "_readme": "Real response examples for every endpoint. The same file feeds the mock server, the database seed and the frontend tests. Coordinates are the 월계동 area near Kwangwoon University. The numbers match the mockup: priority 78, 13 confirmations, 32 meters.",
 
   "POST /api/reports/nearby": {
     "request": {
@@ -201,13 +201,13 @@
       "photo_url": "https://storage.example/full/1103.jpg",
       "photo_thumb_url": "https://storage.example/thumb/1103.jpg"
     },
-    "response_note": "Тот же объект Report. Новая заявка: confirmation_count = 1, status = new, confirmed_by_me = true, priority_score = 2.5 + 22 + 0 + 5 = 30 (округляется до целого)."
+    "response_note": "The same Report object. A new report: confirmation_count = 1, status = new, confirmed_by_me = true, priority_score = 2.5 + 22 + 0 + 5 = 30 (rounded to an integer)."
   },
 
   "POST /api/classify": {
     "response": { "category": "broken_sidewalk", "confidence": 0.92 },
     "response_when_service_down": { "category": null, "confidence": 0 },
-    "note": "Отсутствие ответа — не ошибка. Экран 02 просто не показывает подсказку, категорию выбирают кнопками."
+    "note": "No answer is not an error. Screen 02 simply shows no hint, and the category is picked with the buttons."
   },
 
   "POST /api/voice/draft": {
@@ -221,7 +221,7 @@
 
   "PATCH /api/admin/reports/:id/status": {
     "request": { "status": "in_progress", "note": "노원구 도로과" },
-    "response_note": "Тот же объект Report с обновлённым статусом и новой записью в status_log."
+    "response_note": "The same Report object with the updated status and a new entry in status_log."
   },
 
   "PATCH /api/admin/reports/:id/resolve": {
@@ -229,6 +229,6 @@
       "after_photo_url": "https://storage.example/full/1042-after.jpg",
       "note": "보도블록 교체 완료"
     },
-    "response_note": "status = resolved, resolved_at проставлен, photos.after_url заполнен. Это финальный кадр демонстрации."
+    "response_note": "status = resolved, resolved_at is set, photos.after_url is filled in. This is the final frame of the demo."
   }
 }
