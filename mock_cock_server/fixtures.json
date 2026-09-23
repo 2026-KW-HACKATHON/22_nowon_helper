@@ -1,0 +1,117 @@
+{
+  "devices": [
+    { "id": "d0000000-0000-0000-0000-000000000001", "created_at": "2026-09-01T09:00:00Z" },
+    { "id": "d0000000-0000-0000-0000-000000000002", "created_at": "2026-09-02T10:30:00Z" }
+  ],
+
+  "admins": [
+    {
+      "id": "a0000000-0000-0000-0000-000000000001",
+      "email": "operator@nowon.go.kr",
+      "department": "노원구 도로과",
+      "role": "operator",
+      "created_at": "2026-08-01T00:00:00Z"
+    }
+  ],
+
+  "reports": [
+    {
+      "id": "r0000000-0000-0000-0000-000000000001",
+      "device_id": "d0000000-0000-0000-0000-000000000001",
+      "category": "broken_sidewalk",
+      "severity": "high",
+      "status": "in_progress",
+      "geom": { "lat": 37.6584, "lng": 127.0616 },
+      "address": "광운로 20 앞",
+      "description": "보도블록 파손 — глубокая яма в тротуаре",
+      "priority_score": 78,
+      "confirmation_count": 13,
+      "created_at": "2026-09-10T08:12:00Z",
+      "resolved_at": null
+    },
+    {
+      "id": "r0000000-0000-0000-0000-000000000002",
+      "device_id": "d0000000-0000-0000-0000-000000000002",
+      "category": "broken_streetlight",
+      "severity": "medium",
+      "status": "resolved",
+      "geom": { "lat": 37.6601, "lng": 127.0629 },
+      "address": "노원로 45",
+      "description": "가로등이 꺼져 있음",
+      "priority_score": 35,
+      "confirmation_count": 4,
+      "created_at": "2026-09-05T14:00:00Z",
+      "resolved_at": "2026-09-08T11:20:00Z"
+    }
+  ],
+
+  "report_photos": [
+    {
+      "id": "p0000000-0000-0000-0000-000000000001",
+      "report_id": "r0000000-0000-0000-0000-000000000001",
+      "kind": "before",
+      "url": "https://placehold.co/800x600?text=before",
+      "thumb_url": "https://placehold.co/200x150?text=before",
+      "created_at": "2026-09-10T08:12:00Z"
+    },
+    {
+      "id": "p0000000-0000-0000-0000-000000000002",
+      "report_id": "r0000000-0000-0000-0000-000000000002",
+      "kind": "before",
+      "url": "https://placehold.co/800x600?text=before",
+      "thumb_url": "https://placehold.co/200x150?text=before",
+      "created_at": "2026-09-05T14:00:00Z"
+    },
+    {
+      "id": "p0000000-0000-0000-0000-000000000003",
+      "report_id": "r0000000-0000-0000-0000-000000000002",
+      "kind": "after",
+      "url": "https://placehold.co/800x600?text=after",
+      "thumb_url": "https://placehold.co/200x150?text=after",
+      "created_at": "2026-09-08T11:20:00Z"
+    }
+  ],
+
+  "confirmations": [
+    {
+      "id": "c0000000-0000-0000-0000-000000000001",
+      "report_id": "r0000000-0000-0000-0000-000000000001",
+      "device_id": "d0000000-0000-0000-0000-000000000002",
+      "created_at": "2026-09-10T09:00:00Z"
+    }
+  ],
+
+  "status_logs": [
+    {
+      "id": "l0000000-0000-0000-0000-000000000001",
+      "report_id": "r0000000-0000-0000-0000-000000000001",
+      "from_status": "new",
+      "to_status": "in_progress",
+      "admin_id": "a0000000-0000-0000-0000-000000000001",
+      "note": "신규 → 처리중, 노원구 도로과",
+      "created_at": "2026-09-10T10:00:00Z"
+    },
+    {
+      "id": "l0000000-0000-0000-0000-000000000002",
+      "report_id": "r0000000-0000-0000-0000-000000000002",
+      "from_status": "new",
+      "to_status": "in_progress",
+      "admin_id": "a0000000-0000-0000-0000-000000000001",
+      "note": "신규 → 처리중",
+      "created_at": "2026-09-06T09:00:00Z"
+    },
+    {
+      "id": "l0000000-0000-0000-0000-000000000003",
+      "report_id": "r0000000-0000-0000-0000-000000000002",
+      "from_status": "in_progress",
+      "to_status": "resolved",
+      "admin_id": "a0000000-0000-0000-0000-000000000001",
+      "note": "after-фото загружено",
+      "created_at": "2026-09-08T11:20:00Z"
+    }
+  ],
+
+  "affected_groups": [
+    { "report_id": "r0000000-0000-0000-0000-000000000001", "group_code": "pedestrians" }
+  ]
+}
