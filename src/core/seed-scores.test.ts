@@ -24,17 +24,6 @@ const NOW = new Date('2026-09-17T04:12:00Z');
 
 const daysAgo = (days: number) => new Date(NOW.getTime() - days * DAY_MS);
 
-/**
- * Scores the seed copies from contract/fixtures.json on purpose, even
- * though the formula gives a different number. The seed header explains
- * why. When the team fixes the fixture, this test fails and reminds us
- * to fix the seed too.
- */
-const KNOWN_MISMATCHES: Record<string, { seed: number; formula: number }> = {
-  // 0845: 3 confirmations (7.5) + low (12) + 8 days open (6) + 1 group (5) = 30.5
-  'f6e3a1d8-0845-4d91-b2c7-9e1f5a3c8b40': { seed: 18, formula: 31 },
-};
-
 const seed = readFileSync(new URL('../../db/seed.sql', import.meta.url), 'utf8');
 
 // One row of the `insert into reports` statement:
@@ -89,13 +78,6 @@ for (const report of reports) {
       },
       NOW,
     );
-
-    const known = KNOWN_MISMATCHES[report.id];
-    if (known) {
-      assert.equal(report.stored_score, known.seed, 'the seed no longer copies the fixture');
-      assert.equal(priority_score, known.formula);
-      return;
-    }
 
     assert.equal(report.stored_score, priority_score);
   });

@@ -138,7 +138,7 @@ begin
     ('c8a2d5e1-1077-4b32-9e44-2a6f8c1b3d55'::uuid, 'blocked_ramp',              'medium',           'new',                 '월계로 3 횡단보도',         52,  8),
     ('e1b7f3c9-1039-4c18-8a72-5d3e9f2a7c11'::uuid, 'fallen_tree',               'medium',           'in_progress',         '초안산로 가로수',           39,  6),
     ('a4d9c6b2-1012-4e55-91f3-6b8a4c2d9e73'::uuid, 'blocked_ramp',              'low',              'new',                 '광운로 12 경사로',          24,  2),
-    ('f6e3a1d8-0845-4d91-b2c7-9e1f5a3c8b40'::uuid, 'broken_facility',           'low',              'resolved',            '월계역 2번 출구 점자블록',  18,  3)
+    ('f6e3a1d8-0845-4d91-b2c7-9e1f5a3c8b40'::uuid, 'broken_facility',           'low',              'resolved',            '월계역 2번 출구 점자블록',  31,  3)
   ) as fx (id, category, severity, status, address, priority_score, confirmation_count)
   left join reports rep on rep.id = fx.id
   where rep.id is null

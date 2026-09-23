@@ -14,6 +14,7 @@ Three files, one source of truth:
 - **`X-Device-Id` on every request.** Anonymous device identifier; residents never register. Only the admin operator logs in, and only for the two `/api/admin/*` endpoints.
 - **Errors always have the same shape** — `ApiError`, with `error.code` from a closed list: `already_confirmed` (409), `report_not_found` (404), `rate_limited` (429), `invalid_payload` (400), `unauthorized` (401), `internal` (500). `error.message` is Korean text; show it as is.
 - **Priority is computed on the server only**, in `calcPriority()`. The client receives a finished `priority_score` and a finished `priority_breakdown`. Reference case: 13 confirmations, `high`, 4 days, 2 groups → **78**.
+- **The server recomputes the score on every read and every write.** Part of the score grows with the days a problem stays open, so the stored `priority_score` goes stale by itself. Every response runs `calcPriority()` on the row it returns; every write stores the fresh value. No extra database query — only the calculation.
 - **Never log exact coordinates together with `X-Device-Id`.**
 
 ## The 9 endpoints
@@ -70,3 +71,13 @@ photo.kind: before | after
 ```
 
 Do not add new values. If a new one is needed — conversation first, code after.
+
+## Changes agreed by the team
+
+**23.09.2026** — no new fields, endpoints or enum values; the shapes are unchanged.
+
+- `fixtures.json`, confirm response: `previous_priority_score` 76 → **78**. Report 1042 is already at the confirmations cap, so `확인 +1` moves the counter 12 → 13 and the score stays 78.
+- `fixtures.json`, report 0845: `priority_score` 18 → **31**, the value `calcPriority()` gives. 18 was below the lowest possible score.
+- The rule above: the server recomputes `priority_score` on every read and every write.
+- Known and accepted: the fixture dates are absolute (13.09), the seed dates are relative. On fixture data the app shows "10일 경과" next to a duration of 3 points; on the real API both say 4 days.
+- Screen 06 (내 신고) has no endpoint. Until there is one, it shows the reports with `confirmed_by_me: true` from the map response.
