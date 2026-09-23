@@ -1,7 +1,10 @@
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { router } from 'expo-router';
+import { useState } from 'react';
 import {
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,100 +12,236 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PRIORITY_CAPS } from '../../../contract/types';
+import type { Report } from '../../../contract/types';
+import { confirmReport, getReport } from '@/api';
+import { daysSince, monthDay, points } from '@/format';
+import { useLoad } from '@/hooks/use-load';
+import {
+  CATEGORY_LABEL,
+  GROUP_LABEL,
+  SEVERITY_LABEL,
+  STATUS_COLOR,
+  STATUS_LABEL,
+  priorityColor,
+} from '@/labels';
+
 export default function DetailScreen() {
+  const { id = '' } = useLocalSearchParams<{ id: string }>();
+  const { data: report, error, refreshing, refresh } = useLoad(() => getReport(id), id);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const confirm = async () => {
+    try {
+      await confirmReport(id);
+      await refresh();
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar style="dark" />
 
       <View style={styles.header}>
-        <Pressable style={styles.backButton} onPress={() => router.replace('/')}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
           <Text style={styles.backText}>‹</Text>
         </Pressable>
         <Text style={styles.headerTitle}>문제 상세</Text>
-        <Text style={styles.shareText}>공유</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.photo}>
-          <Text style={styles.photoText}>사진 · Before</Text>
-        </View>
+      {!report ? (
+        <Text style={styles.message}>{error ?? '불러오는 중…'}</Text>
+      ) : (
+        <>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
+            {/* The full image is loaded here and only here (CLAUDE.md, rule 7). */}
+            <View style={styles.photo}>
+              <Image
+                source={report.photos.before_url ?? report.photos.before_thumb_url}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+              />
+              <Text style={styles.photoText}>사진 · Before</Text>
+            </View>
 
-        <View style={styles.badges}>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>처리중</Text>
-          </View>
-          <View style={styles.scoreBadge}>
-            <Text style={styles.scoreBadgeText}>우선순위 78</Text>
-          </View>
-        </View>
+            <View style={styles.badges}>
+              <View
+                style={[styles.badge, { backgroundColor: `${STATUS_COLOR[report.status]}1F` }]}>
+                <Text style={[styles.badgeText, { color: STATUS_COLOR[report.status] }]}>
+                  {STATUS_LABEL[report.status]}
+                </Text>
+              </View>
+              <View style={[styles.badge, styles.scoreBadge]}>
+                <Text style={[styles.badgeText, styles.scoreBadgeText]}>
+                  우선순위 {report.priority_score}
+                </Text>
+              </View>
+            </View>
 
-        <Text style={styles.title}>보도블록 파손</Text>
-        <Text style={styles.address}>월계동 광운로 20 앞 · 4일 전 신고</Text>
+            <Text style={styles.title}>{CATEGORY_LABEL[report.category]}</Text>
+            <Text style={styles.address}>
+              {report.address} · {daysSince(report.created_at)}일 전 신고
+            </Text>
+            {report.affected_groups.length > 0 && (
+              <Text style={styles.groups}>
+                {report.affected_groups.map((group) => GROUP_LABEL[group]).join(' · ')}
+              </Text>
+            )}
 
-        <View style={styles.priorityCard}>
-          <View style={styles.cardTitleRow}>
-            <Text style={styles.cardTitle}>우선순위 점수</Text>
-            <Text style={styles.score}>78 / 100</Text>
-          </View>
+            <PriorityCard report={report} />
 
-          <View style={styles.barBackground}>
-            <View style={styles.bar} />
-          </View>
+            {report.status_log && (
+              <>
+                <Text style={styles.sectionTitle}>진행 상황</Text>
 
-          <View style={styles.scoreGrid}>
-            <Text style={styles.gridText}>확인 13명</Text>
-            <Text style={styles.gridText}>심각도 높음</Text>
-            <Text style={styles.gridText}>경과 4일</Text>
-            <Text style={styles.gridText}>영향 그룹 2</Text>
-          </View>
-        </View>
+                {report.status_log.map((entry) => (
+                  <View key={`${entry.to_status}-${entry.created_at}`} style={styles.timelineRow}>
+                    <View
+                      style={[
+                        styles.timelineDot,
+                        { backgroundColor: STATUS_COLOR[entry.to_status] },
+                      ]}
+                    />
+                    <View>
+                      <Text style={styles.timelineTitle}>
+                        {STATUS_LABEL[entry.to_status]}
+                        {entry.note ? ` · ${entry.note}` : ''}
+                      </Text>
+                      <Text style={styles.timelineDate}>{monthDay(entry.created_at)}</Text>
+                    </View>
+                  </View>
+                ))}
 
-        <Text style={styles.sectionTitle}>진행 상황</Text>
+                {report.status !== 'resolved' && (
+                  <View style={styles.timelineRow}>
+                    <View style={[styles.timelineDot, styles.pendingDot]} />
+                    <Text style={[styles.timelineTitle, styles.disabled]}>
+                      해결 · After 사진 대기
+                    </Text>
+                  </View>
+                )}
+              </>
+            )}
 
-        <View style={styles.timelineRow}>
-          <View style={[styles.timelineDot, styles.green]} />
-          <View>
-            <Text style={styles.timelineTitle}>신규 접수</Text>
-            <Text style={styles.timelineDate}>9월 13일</Text>
-          </View>
-        </View>
+            <View style={styles.beforeAfterTitle}>
+              <Text style={styles.beforeAfterLabel}>BEFORE</Text>
+              <Text style={styles.beforeAfterLabel}>AFTER</Text>
+            </View>
 
-        <View style={styles.timelineRow}>
-          <View style={[styles.timelineDot, styles.orange]} />
-          <View>
-            <Text style={styles.timelineTitle}>처리중 · 노원구 도로과</Text>
-            <Text style={styles.timelineDate}>9월 16일</Text>
-          </View>
-        </View>
+            <View style={styles.beforeAfter}>
+              <View style={styles.beforeBox}>
+                <Image
+                  source={report.photos.before_thumb_url}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                />
+                <Text style={styles.beforeText}>Before 사진</Text>
+              </View>
+              {report.photos.after_url ? (
+                <View style={styles.beforeBox}>
+                  <Image
+                    source={report.photos.after_url}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                  />
+                  <Text style={styles.beforeText}>After 사진</Text>
+                </View>
+              ) : (
+                <View style={styles.afterBox}>
+                  <Text style={styles.afterText}>대기</Text>
+                </View>
+              )}
+            </View>
 
-        <View style={styles.timelineRow}>
-          <View style={[styles.timelineDot, styles.gray]} />
-          <View>
-            <Text style={[styles.timelineTitle, styles.disabled]}>해결 · After 사진 대기</Text>
-          </View>
-        </View>
+            {notice && <Text style={styles.message}>{notice}</Text>}
+          </ScrollView>
 
-        <View style={styles.beforeAfterTitle}>
-          <Text style={styles.beforeAfterLabel}>BEFORE</Text>
-          <Text style={styles.beforeAfterLabel}>AFTER</Text>
-        </View>
-
-        <View style={styles.beforeAfter}>
-          <View style={styles.beforeBox}>
-            <Text style={styles.beforeText}>Before 사진</Text>
-          </View>
-          <View style={styles.afterBox}>
-            <Text style={styles.afterText}>대기</Text>
-          </View>
-        </View>
-      </ScrollView>
-
-      <Pressable
-        style={styles.confirmButton}
-        onPress={() => router.push('/reports')}>
-        <Text style={styles.confirmText}>나도 확인 +1</Text>
-      </Pressable>
+          {report.status !== 'resolved' && (
+            <Pressable
+              style={[styles.confirmButton, report.confirmed_by_me && styles.confirmedButton]}
+              disabled={report.confirmed_by_me}
+              onPress={confirm}>
+              <Text style={[styles.confirmText, report.confirmed_by_me && styles.confirmedText]}>
+                {report.confirmed_by_me ? '확인함 ✓' : '나도 확인 +1'}
+              </Text>
+            </Pressable>
+          )}
+        </>
+      )}
     </SafeAreaView>
+  );
+}
+
+/**
+ * "Why it matters": the four parts of the score, as the server computed
+ * them. The client never recomputes the score (CLAUDE.md, rule 4).
+ */
+function PriorityCard({ report }: { report: Report }) {
+  const breakdown = report.priority_breakdown;
+  const rows = breakdown && [
+    {
+      label: `확인 ${report.confirmation_count}명`,
+      value: breakdown.confirmations,
+      max: PRIORITY_CAPS.confirmations,
+    },
+    {
+      label: `심각도 ${SEVERITY_LABEL[report.severity]}`,
+      value: breakdown.severity,
+      max: PRIORITY_CAPS.severity,
+    },
+    {
+      label: `경과 ${daysSince(report.created_at)}일`,
+      value: breakdown.duration,
+      max: PRIORITY_CAPS.duration,
+    },
+    {
+      label: `영향 그룹 ${report.affected_groups.length}`,
+      value: breakdown.impact,
+      max: PRIORITY_CAPS.impact,
+    },
+  ];
+
+  return (
+    <View style={styles.priorityCard}>
+      <View style={styles.cardTitleRow}>
+        <Text style={styles.cardTitle}>우선순위 점수</Text>
+        <Text style={[styles.score, { color: priorityColor(report.priority_score) }]}>
+          {report.priority_score} / 100
+        </Text>
+      </View>
+
+      <View style={styles.barBackground}>
+        <View
+          style={[
+            styles.bar,
+            {
+              width: `${report.priority_score}%`,
+              backgroundColor: priorityColor(report.priority_score),
+            },
+          ]}
+        />
+      </View>
+
+      {rows && (
+        <View style={styles.scoreGrid}>
+          {rows.map((row) => (
+            <View key={row.label} style={styles.gridCell}>
+              <Text style={styles.gridText}>{row.label}</Text>
+              <Text style={styles.gridPoints}>
+                {points(row.value)}
+                <Text style={styles.gridMax}> / {row.max}</Text>
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -140,9 +279,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#14181A',
   },
-  shareText: {
-    color: '#65706C',
-    fontWeight: '700',
+  message: {
+    marginTop: 16,
+    color: '#68736E',
+    fontSize: 14,
+    textAlign: 'center',
   },
   content: {
     paddingHorizontal: 20,
@@ -151,6 +292,7 @@ const styles = StyleSheet.create({
   photo: {
     height: 255,
     borderRadius: 20,
+    overflow: 'hidden',
     backgroundColor: '#EEF1EF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -160,28 +302,22 @@ const styles = StyleSheet.create({
   },
   badges: {
     flexDirection: 'row',
+    gap: 8,
     marginTop: 17,
   },
-  statusBadge: {
-    backgroundColor: '#FFF0D8',
+  badge: {
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    marginRight: 8,
   },
-  statusText: {
-    color: '#B87503',
+  badgeText: {
     fontWeight: '800',
   },
   scoreBadge: {
     backgroundColor: '#FBE8E5',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
   },
   scoreBadgeText: {
     color: '#C0392B',
-    fontWeight: '800',
   },
   title: {
     marginTop: 14,
@@ -193,6 +329,11 @@ const styles = StyleSheet.create({
     marginTop: 7,
     color: '#6C7572',
     fontSize: 15,
+  },
+  groups: {
+    marginTop: 5,
+    color: '#6C7572',
+    fontSize: 14,
   },
   priorityCard: {
     marginTop: 25,
@@ -212,7 +353,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   score: {
-    color: '#C0392B',
     fontSize: 26,
     fontWeight: '900',
   },
@@ -224,20 +364,31 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   bar: {
-    width: '78%',
     height: '100%',
-    backgroundColor: '#C0392B',
   },
   scoreGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 18,
   },
-  gridText: {
+  gridCell: {
     width: '50%',
-    color: '#5C6663',
-    fontSize: 15,
     marginBottom: 12,
+  },
+  gridText: {
+    color: '#5C6663',
+    fontSize: 14,
+  },
+  gridPoints: {
+    marginTop: 2,
+    color: '#14181A',
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  gridMax: {
+    color: '#9BA6A1',
+    fontSize: 13,
+    fontWeight: '600',
   },
   sectionTitle: {
     marginTop: 28,
@@ -257,13 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     marginRight: 13,
   },
-  green: {
-    backgroundColor: '#0E8A5F',
-  },
-  orange: {
-    backgroundColor: '#B87503',
-  },
-  gray: {
+  pendingDot: {
     backgroundColor: '#D9DEDC',
   },
   timelineTitle: {
@@ -290,13 +435,14 @@ const styles = StyleSheet.create({
   },
   beforeAfter: {
     flexDirection: 'row',
+    gap: '4%',
     marginTop: 10,
   },
   beforeBox: {
     width: '48%',
     height: 116,
     borderRadius: 14,
-    marginRight: '4%',
+    overflow: 'hidden',
     backgroundColor: '#EEF1EF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -327,9 +473,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
   },
+  confirmedButton: {
+    backgroundColor: '#E7F3EE',
+  },
   confirmText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '900',
+  },
+  confirmedText: {
+    color: '#0E8A5F',
   },
 });

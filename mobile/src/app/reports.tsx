@@ -1,98 +1,92 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import {
   Pressable,
-  SafeAreaView,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const reports = [
-  {
-    title: '보도블록 파손',
-    subtitle: '13명 확인 · 우선순위 78',
-    status: '처리중',
-    color: '#B87503',
-  },
-  {
-    title: '경사로에 자전거 방치',
-    subtitle: '2명 확인 · 우선순위 24',
-    status: '신규',
-    color: '#5C6663',
-  },
-  {
-    title: '쓰러진 나무 제거',
-    subtitle: 'Before / After 보기',
-    status: '해결',
-    color: '#0E8A5F',
-  },
-];
+import { DEMO_BBOX, getMap } from '@/api';
+import { BottomNav } from '@/components/bottom-nav';
+import { useLoad } from '@/hooks/use-load';
+import { CATEGORY_LABEL, STATUS_COLOR, STATUS_LABEL } from '@/labels';
 
+/**
+ * 내 신고.
+ *
+ * TEMPORARY: the contract has no endpoint for "my reports" yet — it is
+ * on the list of questions for the team. Until then this screen shows
+ * the problems this device confirmed (confirmed_by_me), taken from the
+ * map response. Creating a report also confirms it, so the reports this
+ * device wrote are in this list too.
+ */
 export default function ReportsScreen() {
+  const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
+
+  const mine = (data?.reports ?? []).filter((report) => report.confirmed_by_me);
+  const resolved = mine.filter((report) => report.status === 'resolved').length;
+
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <StatusBar style="dark" />
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
         <View style={styles.header}>
           <Text style={styles.title}>내 신고</Text>
-          <Text style={styles.summary}>신고 2건 · 확인 7건 · 해결 1건</Text>
+          {data && (
+            <Text style={styles.summary}>
+              확인 {mine.length}건 · 해결 {resolved}건
+            </Text>
+          )}
         </View>
 
-        <View style={styles.chips}>
-          <View style={[styles.chip, styles.activeChip]}>
-            <Text style={styles.activeChipText}>전체</Text>
-          </View>
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>내가 쓴 신고</Text>
-          </View>
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>내가 확인</Text>
-          </View>
-        </View>
+        {error && <Text style={styles.message}>{error}</Text>}
+        {!data && !error && <Text style={styles.message}>불러오는 중…</Text>}
+        {data && mine.length === 0 && (
+          <Text style={styles.message}>아직 확인한 문제가 없습니다.</Text>
+        )}
 
         <View style={styles.list}>
-          {reports.map((report) => (
+          {mine.map((report) => (
             <Pressable
-              key={report.title}
+              key={report.id}
               style={styles.card}
-              onPress={() => router.push('/detail')}>
-              <View style={styles.thumbnail} />
+              onPress={() => router.push({ pathname: '/detail', params: { id: report.id } })}>
+              <View style={styles.thumbnail}>
+                <Image
+                  source={report.photos.before_thumb_url}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="cover"
+                />
+              </View>
 
               <View style={styles.cardText}>
-                <View style={[styles.status, { backgroundColor: `${report.color}18` }]}>
-                  <Text style={[styles.statusText, { color: report.color }]}>
-                    {report.status}
+                <View
+                  style={[styles.status, { backgroundColor: `${STATUS_COLOR[report.status]}18` }]}>
+                  <Text style={[styles.statusText, { color: STATUS_COLOR[report.status] }]}>
+                    {STATUS_LABEL[report.status]}
                   </Text>
                 </View>
-                <Text style={styles.reportTitle}>{report.title}</Text>
-                <Text style={styles.subtitle}>{report.subtitle}</Text>
+                <Text style={styles.reportTitle}>{CATEGORY_LABEL[report.category]}</Text>
+                <Text style={styles.subtitle}>
+                  {report.status === 'resolved'
+                    ? 'Before / After 보기'
+                    : `${report.confirmation_count}명 확인 · 우선순위 ${report.priority_score}`}
+                </Text>
               </View>
             </Pressable>
           ))}
         </View>
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <Pressable style={styles.navItem} onPress={() => router.replace('/')}>
-          <View style={styles.navIcon} />
-          <Text style={styles.navText}>홈</Text>
-        </Pressable>
-
-        <Pressable style={styles.navItem} onPress={() => router.replace('/')}>
-          <View style={styles.navIcon} />
-          <Text style={styles.navText}>지도</Text>
-        </Pressable>
-
-        <View style={styles.navItem}>
-          <View style={[styles.navIcon, styles.activeNavIcon]} />
-          <Text style={[styles.navText, styles.activeNavText]}>내 신고</Text>
-        </View>
-
-        <View style={styles.navItem}>
-          <View style={styles.navIcon} />
-          <Text style={styles.navText}>음성</Text>
-        </View>
-      </View>
+      <BottomNav active="reports" />
     </SafeAreaView>
   );
 }
@@ -107,7 +101,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingBottom: 110,
   },
   header: {
     marginTop: 20,
@@ -122,28 +115,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#5C6663',
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  message: {
     marginTop: 24,
-  },
-  chip: {
-    borderRadius: 24,
-    backgroundColor: '#F5F6F5',
-    paddingHorizontal: 15,
-    paddingVertical: 11,
-  },
-  activeChip: {
-    backgroundColor: '#14181A',
-  },
-  chipText: {
-    color: '#5C6663',
-    fontWeight: '700',
-  },
-  activeChipText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: '#68736E',
+    fontSize: 14,
+    textAlign: 'center',
   },
   list: {
     gap: 16,
@@ -161,6 +137,7 @@ const styles = StyleSheet.create({
     width: 86,
     height: 86,
     borderRadius: 12,
+    overflow: 'hidden',
     backgroundColor: '#EEF1EF',
   },
   cardText: {
@@ -186,40 +163,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 14,
     color: '#5C6663',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 13,
-    paddingBottom: 22,
-    borderTopWidth: 1,
-    borderColor: '#EEF0EF',
-    backgroundColor: '#FFFFFF',
-  },
-  navItem: {
-    alignItems: 'center',
-    gap: 6,
-    minWidth: 50,
-  },
-  navIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: '#CCD2D0',
-  },
-  activeNavIcon: {
-    backgroundColor: '#0E8A5F',
-  },
-  navText: {
-    fontSize: 12,
-    color: '#84908B',
-  },
-  activeNavText: {
-    color: '#0E8A5F',
-    fontWeight: '800',
   },
 });
