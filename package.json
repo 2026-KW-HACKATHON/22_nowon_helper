@@ -7,6 +7,13 @@
     "node": ">=22.6"
   },
   "scripts": {
-    "test": "node --test \"src/**/*.test.ts\""
+    "test": "node --test \"src/**/*.test.ts\"",
+    "db:check": "node --env-file-if-exists=.env db/check.ts"
+  },
+  "dependencies": {
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
   }
 }
