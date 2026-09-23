@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Report } from '../../../contract/types';
 import { confirmReport, DEMO_BBOX, getMap } from '@/api';
 import { BottomNav } from '@/components/bottom-nav';
+import { NeighborhoodMap } from '@/components/neighborhood-map';
 import { daysSince } from '@/format';
 import { useLoad } from '@/hooks/use-load';
 import { CATEGORY_LABEL, priorityColor } from '@/labels';
@@ -25,12 +26,11 @@ import { CATEGORY_LABEL, priorityColor } from '@/labels';
  */
 const DEMO_LOCATION = { lat: 37.62012, lng: 127.05981 };
 
-const [MIN_LNG, MIN_LAT, MAX_LNG, MAX_LAT] = DEMO_BBOX;
-
 export default function HomeScreen() {
   const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
-  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
   const [notice, setNotice] = useState<string | null>(null);
+  // A finger on the map pans the map, not the page.
+  const [pageScroll, setPageScroll] = useState(true);
 
   const reports = data?.reports ?? [];
   const counts = data?.counts;
@@ -38,15 +38,23 @@ export default function HomeScreen() {
     .filter((report) => report.status !== 'resolved')
     .sort((a, b) => b.priority_score - a.priority_score)[0];
 
-  /** Until the Kakao map: place a point inside the bbox rectangle. */
-  const project = (lat: number, lng: number) => ({
-    x: ((lng - MIN_LNG) / (MAX_LNG - MIN_LNG)) * mapSize.width,
-    y: ((MAX_LAT - lat) / (MAX_LAT - MIN_LAT)) * mapSize.height,
-  });
-  const me = project(DEMO_LOCATION.lat, DEMO_LOCATION.lng);
+  const pins = useMemo(
+    () => ({
+      me: DEMO_LOCATION,
+      reports: (data?.reports ?? []).map((report) => ({
+        id: report.id,
+        lat: report.lat,
+        lng: report.lng,
+        score: report.priority_score,
+        color: priorityColor(report.priority_score),
+        faded: report.status === 'resolved',
+      })),
+    }),
+    [data],
+  );
 
-  const openDetail = (report: Report) =>
-    router.push({ pathname: '/detail', params: { id: report.id } });
+  const openDetailById = (id: string) => router.push({ pathname: '/detail', params: { id } });
+  const openDetail = (report: Report) => openDetailById(report.id);
 
   const confirm = async (report: Report) => {
     try {
@@ -63,6 +71,7 @@ export default function HomeScreen() {
 
       <ScrollView
         style={styles.screen}
+        scrollEnabled={pageScroll}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
         <View style={styles.locationBox}>
           <View style={styles.greenDot} />
@@ -89,42 +98,15 @@ export default function HomeScreen() {
         )}
 
         <View
-          style={styles.map}
-          onLayout={(e) => setMapSize(e.nativeEvent.layout)}>
-          {Array.from({ length: 7 }).map((_, index) => (
-            <View key={index} style={[styles.mapLine, { top: index * 63 }]} />
-          ))}
-
-          {mapSize.width > 0 && (
-            <View style={[styles.currentLocationOuter, { left: me.x - 41, top: me.y - 41 }]}>
-              <View style={styles.currentLocation} />
-            </View>
-          )}
-
-          {mapSize.width > 0 &&
-            reports.map((report) => {
-              const { x, y } = project(report.lat, report.lng);
-              const size = 40 + Math.round(report.priority_score / 5);
-              return (
-                <Pressable
-                  key={report.id}
-                  onPress={() => openDetail(report)}
-                  style={[
-                    styles.marker,
-                    {
-                      left: x - size / 2,
-                      top: y - size / 2,
-                      width: size,
-                      height: size,
-                      borderRadius: size / 2,
-                      backgroundColor: priorityColor(report.priority_score),
-                      opacity: report.status === 'resolved' ? 0.55 : 1,
-                    },
-                  ]}>
-                  <Text style={styles.markerText}>{report.priority_score}</Text>
-                </Pressable>
-              );
-            })}
+          onTouchStart={() => setPageScroll(false)}
+          onTouchEnd={() => setPageScroll(true)}
+          onTouchCancel={() => setPageScroll(true)}>
+          <NeighborhoodMap
+            bbox={DEMO_BBOX}
+            data={pins}
+            onSelect={openDetailById}
+            style={styles.map}
+          />
         </View>
 
         <View style={styles.sheet}>
@@ -280,49 +262,6 @@ const styles = StyleSheet.create({
   map: {
     height: 465,
     marginTop: 20,
-    backgroundColor: '#EEF1EF',
-    overflow: 'hidden',
-  },
-  mapLine: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: '#D8DEDB',
-  },
-  marker: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-  markerText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  currentLocationOuter: {
-    position: 'absolute',
-    width: 82,
-    height: 82,
-    borderRadius: 41,
-    backgroundColor: '#CFE0FD',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  currentLocation: {
-    width: 43,
-    height: 43,
-    borderRadius: 22,
-    borderWidth: 5,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#2878F0',
   },
   sheet: {
     marginTop: -24,

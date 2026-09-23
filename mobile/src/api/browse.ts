@@ -1,10 +1,9 @@
 /**
  * Browse path (FE-2): the map and the detail screen.
  *
- * Today every function answers from contract/fixtures.json: the real
- * API does not exist yet. When it does, each function body becomes one
- * fetch() to the same endpoint, with the X-Device-Id header (see
- * client.ts's request()), and no screen has to change.
+ * EXPO_PUBLIC_API_URL set → one request() to the real endpoint, with the
+ * X-Device-Id header. Unset → the answer comes from contract/fixtures.json
+ * (see config.ts), so the screens run without a server.
  *
  * One function = one endpoint from contract/README.md. One screen calls
  * one function.
@@ -12,7 +11,8 @@
 
 import fixtures from '../../../contract/fixtures.json';
 import type { MapResponse, Report, ReportDetailResponse } from '../../../contract/types';
-import { ApiRequestError } from './client';
+import { ApiRequestError, request } from './client';
+import { USE_FIXTURES } from './config';
 
 /** minLng, minLat, maxLng, maxLat — the order of the ?bbox= parameter. */
 export type Bbox = [number, number, number, number];
@@ -25,8 +25,9 @@ const mapFixture = fixtures['GET /api/reports?bbox=127.052,37.615,127.068,37.626
 const detailFixture = fixtures['GET /api/reports/:id'].response as ReportDetailResponse;
 
 /** GET /api/reports?bbox= — points and status counts for the map. */
-export async function getMap(_bbox: Bbox): Promise<MapResponse> {
-  return mapFixture;
+export async function getMap(bbox: Bbox): Promise<MapResponse> {
+  if (USE_FIXTURES) return mapFixture;
+  return request<MapResponse>('GET', `/api/reports?bbox=${bbox.join(',')}`, undefined);
 }
 
 /**
@@ -38,6 +39,10 @@ export async function getMap(_bbox: Bbox): Promise<MapResponse> {
  * screen hides those blocks instead of inventing them.
  */
 export async function getReport(id: string): Promise<ReportDetailResponse> {
+  if (!USE_FIXTURES) {
+    return request<ReportDetailResponse>('GET', `/api/reports/${encodeURIComponent(id)}`, undefined);
+  }
+
   if (id === detailFixture.id) return detailFixture;
 
   const fromMap = mapFixture.reports.find((report: Report) => report.id === id);

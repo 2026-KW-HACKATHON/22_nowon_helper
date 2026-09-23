@@ -4,16 +4,23 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.6"
+    "node": ">=22.18"
   },
   "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/server.ts",
+    "start": "node --env-file-if-exists=.env src/server.ts",
     "test": "node --test \"src/**/*.test.ts\"",
-    "db:check": "node --env-file-if-exists=.env db/check.ts"
+    "db:check": "node --env-file-if-exists=.env db/check.ts",
+    "db:seed": "node --env-file-if-exists=.env db/seed.ts"
   },
   "dependencies": {
+    "cors": "2.8.6",
+    "express": "5.2.1",
     "pg": "8.23.0"
   },
   "devDependencies": {
+    "@types/cors": "2.8.19",
+    "@types/express": "5.0.6",
     "@types/pg": "8.23.1"
   }
 }
