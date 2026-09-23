@@ -1,0 +1,441 @@
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import type { Report } from '../../../contract/types';
+import { confirmReport, DEMO_BBOX, getMap } from '@/api';
+import { BottomNav } from '@/components/bottom-nav';
+import { daysSince } from '@/format';
+import { useLoad } from '@/hooks/use-load';
+import { CATEGORY_LABEL, priorityColor } from '@/labels';
+
+/**
+ * Until GPS is wired: the resident stands where the nearby fixture
+ * says, 32 m from report 1042.
+ */
+const DEMO_LOCATION = { lat: 37.62012, lng: 127.05981 };
+
+const [MIN_LNG, MIN_LAT, MAX_LNG, MAX_LAT] = DEMO_BBOX;
+
+export default function HomeScreen() {
+  const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
+  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const reports = data?.reports ?? [];
+  const counts = data?.counts;
+  const urgent = reports
+    .filter((report) => report.status !== 'resolved')
+    .sort((a, b) => b.priority_score - a.priority_score)[0];
+
+  /** Until the Kakao map: place a point inside the bbox rectangle. */
+  const project = (lat: number, lng: number) => ({
+    x: ((lng - MIN_LNG) / (MAX_LNG - MIN_LNG)) * mapSize.width,
+    y: ((MAX_LAT - lat) / (MAX_LAT - MIN_LAT)) * mapSize.height,
+  });
+  const me = project(DEMO_LOCATION.lat, DEMO_LOCATION.lng);
+
+  const openDetail = (report: Report) =>
+    router.push({ pathname: '/detail', params: { id: report.id } });
+
+  const confirm = async (report: Report) => {
+    try {
+      await confirmReport(report.id);
+      await refresh();
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar style="dark" />
+
+      <ScrollView
+        style={styles.screen}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
+        <View style={styles.locationBox}>
+          <View style={styles.greenDot} />
+          <Text style={styles.locationText}>월계동</Text>
+        </View>
+
+        {counts && (
+          <View style={styles.chips}>
+            <View style={[styles.chip, styles.activeChip]}>
+              <Text style={styles.activeChipText}>
+                전체 {counts.new + counts.in_progress + counts.resolved}
+              </Text>
+            </View>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>신규 {counts.new}</Text>
+            </View>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>처리중 {counts.in_progress}</Text>
+            </View>
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>해결 {counts.resolved}</Text>
+            </View>
+          </View>
+        )}
+
+        <View
+          style={styles.map}
+          onLayout={(e) => setMapSize(e.nativeEvent.layout)}>
+          {Array.from({ length: 7 }).map((_, index) => (
+            <View key={index} style={[styles.mapLine, { top: index * 63 }]} />
+          ))}
+
+          {mapSize.width > 0 && (
+            <View style={[styles.currentLocationOuter, { left: me.x - 41, top: me.y - 41 }]}>
+              <View style={styles.currentLocation} />
+            </View>
+          )}
+
+          {mapSize.width > 0 &&
+            reports.map((report) => {
+              const { x, y } = project(report.lat, report.lng);
+              const size = 40 + Math.round(report.priority_score / 5);
+              return (
+                <Pressable
+                  key={report.id}
+                  onPress={() => openDetail(report)}
+                  style={[
+                    styles.marker,
+                    {
+                      left: x - size / 2,
+                      top: y - size / 2,
+                      width: size,
+                      height: size,
+                      borderRadius: size / 2,
+                      backgroundColor: priorityColor(report.priority_score),
+                      opacity: report.status === 'resolved' ? 0.55 : 1,
+                    },
+                  ]}>
+                  <Text style={styles.markerText}>{report.priority_score}</Text>
+                </Pressable>
+              );
+            })}
+        </View>
+
+        <View style={styles.sheet}>
+          <View style={styles.handle} />
+
+          {error && <Text style={styles.message}>{error}</Text>}
+          {!data && !error && <Text style={styles.message}>불러오는 중…</Text>}
+
+          {urgent && (
+            <>
+              <View style={styles.sheetHeading}>
+                <Text style={styles.sheetTitle}>가장 시급한 문제</Text>
+                <View style={styles.priorityPill}>
+                  <Text style={styles.priorityPillText}>우선순위 {urgent.priority_score}</Text>
+                </View>
+              </View>
+
+              <Pressable style={styles.reportRow} onPress={() => openDetail(urgent)}>
+                <View style={styles.thumbnail}>
+                  <Image
+                    source={urgent.photos.before_thumb_url}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                  />
+                  <Text style={styles.thumbnailText}>사진</Text>
+                </View>
+
+                <View style={styles.reportInfo}>
+                  <Text style={styles.reportTitle}>{CATEGORY_LABEL[urgent.category]}</Text>
+                  <Text style={styles.reportSub}>
+                    {urgent.confirmation_count}명 확인 · {daysSince(urgent.created_at)}일 경과
+                  </Text>
+                  <View style={styles.priorityTrack}>
+                    <View
+                      style={[
+                        styles.priorityFill,
+                        {
+                          width: `${urgent.priority_score}%`,
+                          backgroundColor: priorityColor(urgent.priority_score),
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+              </Pressable>
+
+              <View style={styles.actionRow}>
+                <Pressable
+                  style={[styles.confirmButton, urgent.confirmed_by_me && styles.confirmedButton]}
+                  disabled={urgent.confirmed_by_me}
+                  onPress={() => confirm(urgent)}>
+                  <Text
+                    style={[styles.confirmText, urgent.confirmed_by_me && styles.confirmedText]}>
+                    {urgent.confirmed_by_me ? '확인함 ✓' : '확인 +1'}
+                  </Text>
+                </Pressable>
+
+                <Pressable style={styles.detailButton} onPress={() => openDetail(urgent)}>
+                  <Text style={styles.detailButtonText}>상세</Text>
+                </Pressable>
+              </View>
+
+              {notice && <Text style={styles.message}>{notice}</Text>}
+            </>
+          )}
+        </View>
+      </ScrollView>
+
+      <BottomNav active="home" />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 390,
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  screen: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  locationBox: {
+    height: 62,
+    marginHorizontal: 20,
+    marginTop: 18,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    gap: 10,
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
+  },
+  greenDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0E8A5F',
+  },
+  locationText: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#14181A',
+  },
+  chips: {
+    flexDirection: 'row',
+    gap: 9,
+    marginHorizontal: 20,
+    marginTop: 18,
+  },
+  chip: {
+    borderRadius: 22,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  activeChip: {
+    backgroundColor: '#14181A',
+  },
+  chipText: {
+    color: '#5C6663',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  activeChipText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  map: {
+    height: 465,
+    marginTop: 20,
+    backgroundColor: '#EEF1EF',
+    overflow: 'hidden',
+  },
+  mapLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: '#D8DEDB',
+  },
+  marker: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  markerText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  currentLocationOuter: {
+    position: 'absolute',
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    backgroundColor: '#CFE0FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currentLocation: {
+    width: 43,
+    height: 43,
+    borderRadius: 22,
+    borderWidth: 5,
+    borderColor: '#FFFFFF',
+    backgroundColor: '#2878F0',
+  },
+  sheet: {
+    marginTop: -24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    zIndex: 2,
+  },
+  handle: {
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    alignSelf: 'center',
+    backgroundColor: '#D7DCDA',
+  },
+  message: {
+    marginTop: 16,
+    color: '#68736E',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  sheetHeading: {
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sheetTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#14181A',
+  },
+  priorityPill: {
+    borderRadius: 18,
+    backgroundColor: '#FCE8E5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  priorityPillText: {
+    color: '#C0392B',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  reportRow: {
+    flexDirection: 'row',
+    gap: 14,
+    marginTop: 19,
+  },
+  thumbnail: {
+    width: 92,
+    height: 92,
+    borderRadius: 14,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF1EF',
+  },
+  thumbnailText: {
+    color: '#AAB4AF',
+    fontSize: 13,
+  },
+  reportInfo: {
+    flex: 1,
+  },
+  reportTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#14181A',
+  },
+  reportSub: {
+    marginTop: 6,
+    color: '#68736E',
+    fontSize: 14,
+  },
+  priorityTrack: {
+    height: 8,
+    marginTop: 17,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: '#E9ECEA',
+  },
+  priorityFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 22,
+  },
+  confirmButton: {
+    flex: 1,
+    height: 58,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0E8A5F',
+  },
+  confirmedButton: {
+    backgroundColor: '#E7F3EE',
+  },
+  confirmText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  confirmedText: {
+    color: '#0E8A5F',
+  },
+  detailButton: {
+    width: 106,
+    height: 58,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E1E5E3',
+    backgroundColor: '#F8F9F8',
+  },
+  detailButtonText: {
+    color: '#14181A',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+});

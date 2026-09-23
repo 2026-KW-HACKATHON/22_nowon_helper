@@ -42,7 +42,7 @@
     "headers": { "X-Device-Id": "9f2c4e18-0b6a-4d3e-8f51-7c9a2b4d6e80" },
     "response": {
       "previous_confirmation_count": 12,
-      "previous_priority_score": 76,
+      "previous_priority_score": 78,
       "report": {
         "id": "b3f1c2a4-1042-4a77-9c11-8d2e5f7a1042",
         "category": "broken_sidewalk",
@@ -147,7 +147,7 @@
           "lat": 37.6243,
           "lng": 127.0558,
           "address": "월계역 2번 출구 점자블록",
-          "priority_score": 18,
+          "priority_score": 31,
           "confirmation_count": 3,
           "affected_groups": ["visually_impaired"],
           "photos": {

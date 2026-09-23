@@ -58,9 +58,12 @@ When a rule blocks the task, say so and stop. Do not look for a way around it.
 |---|---|
 | BE-1 · data core | `db/**`, `src/core/**` |
 | BE-2 · reads, admin, deploy | `src/read/**`, `src/admin/**`, `admin-web/**` |
-| FE-1 · create path | `app/screens/report/**` |
-| FE-2 · browse path | `app/screens/browse/**` |
+| FE-1 · create path | `mobile/src/app/report/**` |
+| FE-2 · browse path | `mobile/src/app/index.tsx`, `mobile/src/app/detail.tsx`, `mobile/src/app/reports.tsx`, `mobile/src/components/**` |
+| FE-1 + FE-2 (shared) | `mobile/src/api/**` — each adds their own functions; a change to the other's function is a request to them |
 | Everyone (frozen since 22.09) | `contract/**`, `CLAUDE.md` |
+
+The mobile app is its own project in `/mobile` (own `package.json`, `app.json`, `tsconfig.json`). expo-router turns every file in `mobile/src/app/` into a screen.
 
 ## Enum values — closed lists
 
@@ -98,7 +101,7 @@ npm run dev          # API on :3000
 npm run mock         # mock server on fixtures, :3001
 npm run db:migrate   # apply migrations
 npm run db:seed      # 10 demo reports around 월계동
-npm start            # Expo
+cd mobile && npm start   # Expo
 ```
 
 ## A task is done when

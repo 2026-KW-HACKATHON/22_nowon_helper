@@ -24,24 +24,16 @@
 -- database five minutes before the demo.
 --
 --
--- TWO NUMBERS IN THE FIXTURES DO NOT ADD UP
+-- THE DEMO 확인 +1 DOES NOT MOVE THE SCORE
 --
--- We copy them as they are. The data must match the mock, and the
--- contract is only changed by the whole team. So: reported, not fixed.
+-- Report 1042 is already at the confirmations cap: 12 * 2.5 = 30.
+-- 확인 +1 moves the counter 12 → 13, and the score stays 78. The
+-- confirm fixture says the same (previous_priority_score 78). On stage
+-- we show the counter. To show the score going up, use report 1077:
+-- 8 → 9 confirmations gives 52 → 54.
 --
---   1. The confirm response has previous_confirmation_count 12 and
---      previous_priority_score 76. But 12 confirmations give 78
---      (12 * 2.5 = 30, exactly the cap). 76 needs 11 confirmations
---      (27.5 + 35 + 3 + 10 = 75.5 → 76).
---      What this means for the demo: report 1042 is already at the
---      confirmations cap. 확인 +1 moves the counter 12 → 13, but the
---      score stays 78. To show the score going up on stage, use report
---      1077 instead: 8 → 9 confirmations gives 52 → 54.
---
---   2. The resolved report 0845 has priority_score 18. Its lowest
---      possible score is 25 (3 * 2.5 + 12 for low + 5 for one group =
---      24.5), whatever the number of days. We store 18 to match the
---      fixture.
+-- Every score in this file is what calcPriority() gives. `npm test`
+-- checks that (src/core/seed-scores.test.ts).
 -- ─────────────────────────────────────────────────────────────
 
 
@@ -92,7 +84,7 @@ from generate_series(1, 60);
 --   1077  min(30,  8*2.5)=20 + med  22 + 6d→4.5  + 1 group → 5  = 51.5 → 52
 --   1039  min(30,  6*2.5)=15 + med  22 + 3d→2.25 + none    → 0  = 39.25 → 39
 --   1012  min(30,  2*2.5)= 5 + low  12 + 3d→2.25 + 1 group → 5  = 24.25 → 24
---   0845  see the note at the top — 18 comes from the fixture
+--   0845  min(30,  3*2.5)= 7.5 + low 12 + 8d→6 (closed) + 1 group→5 = 30.5  → 31
 --   1108  min(30,  4*2.5)=10 + med  22 + 2d→1.5  + 1 group → 5  = 38.5  → 39
 --   1112  min(30,  5*2.5)=12.5 + med 22 + 5d→3.75 + 2 groups→10 = 48.25 → 48
 --   1125  min(30,  9*2.5)=22.5 + high 35 + 7d→5.25 + 1 group→ 5 = 67.75 → 68
@@ -137,7 +129,7 @@ insert into reports (
 ('f6e3a1d8-0845-4d91-b2c7-9e1f5a3c8b40', '9f2c4e18-0b6a-4d3e-8f51-7c9a2b4d6e80',
  'broken_facility', 'low', 'resolved',
  st_makepoint(127.0558, 37.6243)::geography, '월계역 2번 출구 점자블록',
- 18, 3, now() - interval '13 days', now() - interval '5 days'),
+ 31, 3, now() - interval '13 days', now() - interval '5 days'),
 
 -- ── added so the counts match the fixture, inside the bbox ──
 
