@@ -193,6 +193,16 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
+      {/* TODO(FE-2 review): entry point into the create path (FE-1), wired here only
+          so the end-to-end demo scenario has a way in. Feel free to restyle/relocate. */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="신고하기"
+        style={styles.fab}
+        onPress={() => router.push('/report')}>
+        <Text style={styles.fabText}>+ 신고하기</Text>
+      </Pressable>
+
       <BottomNav active="home" />
     </SafeAreaView>
   );
@@ -436,6 +446,27 @@ const styles = StyleSheet.create({
   detailButtonText: {
     color: '#14181A',
     fontSize: 17,
+    fontWeight: '900',
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 96,
+    height: 52,
+    paddingHorizontal: 20,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0E8A5F',
+    shadowColor: '#000000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  fabText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '900',
   },
 });

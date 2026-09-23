@@ -2,73 +2,12 @@
  * The only place the app gets data from. Screens call these functions
  * and never know where the data comes from.
  *
- * Today every function answers from contract/fixtures.json: the real
- * API does not exist yet. When it does, each function body becomes one
- * fetch() to the same endpoint, with the X-Device-Id header, and no
- * screen has to change.
- *
- * One function = one endpoint from contract/README.md. One screen calls
- * one function.
+ * Split by path so FE-1 and FE-2 each own their own file (see CLAUDE.md's
+ * ownership map): client.ts is the shared HTTP layer, browse.ts is FE-2's
+ * map/detail endpoints, create.ts is FE-1's create/confirm/AI endpoints.
+ * This file just re-exports both, so screens keep importing from '@/api'.
  */
 
-import fixtures from '../../../contract/fixtures.json';
-import type {
-  ApiError,
-  ConfirmResponse,
-  MapResponse,
-  Report,
-  ReportDetailResponse,
-} from '../../../contract/types';
-
-/** minLng, minLat, maxLng, maxLat — the order of the ?bbox= parameter. */
-export type Bbox = [number, number, number, number];
-
-/** The area the fixtures describe: 월계동 around Kwangwoon University. */
-export const DEMO_BBOX: Bbox = [127.052, 37.615, 127.068, 37.626];
-
-/** Thrown for every failed request. `message` is Korean text for the user. */
-export class ApiRequestError extends Error {
-  constructor(
-    readonly code: ApiError['error']['code'],
-    message: string,
-  ) {
-    super(message);
-  }
-}
-
-const mapFixture = fixtures['GET /api/reports?bbox=127.052,37.615,127.068,37.626']
-  .response as MapResponse;
-const detailFixture = fixtures['GET /api/reports/:id'].response as ReportDetailResponse;
-
-/** GET /api/reports?bbox= — points and status counts for the map. */
-export async function getMap(_bbox: Bbox): Promise<MapResponse> {
-  return mapFixture;
-}
-
-/**
- * GET /api/reports/:id — details.
- *
- * The fixtures have a full detail response for one report only (1042).
- * For the others we return what the map fixture knows. It has no
- * priority_breakdown, no status_log and no full photo, so the detail
- * screen hides those blocks instead of inventing them.
- */
-export async function getReport(id: string): Promise<ReportDetailResponse> {
-  if (id === detailFixture.id) return detailFixture;
-
-  const fromMap = mapFixture.reports.find((report: Report) => report.id === id);
-  if (fromMap) return fromMap;
-
-  throw new ApiRequestError('report_not_found', '문제를 찾을 수 없습니다.');
-}
-
-/**
- * POST /api/reports/:id/confirm — 확인 +1.
- *
- * Needs the real API: the fixtures cannot remember that this device
- * confirmed. Until then it fails quietly with a message, so the button
- * never pretends the counter went up.
- */
-export async function confirmReport(_id: string): Promise<ConfirmResponse> {
-  throw new ApiRequestError('internal', '서버 연결 후 사용할 수 있습니다.');
-}
+export { ApiRequestError } from './client';
+export { DEMO_BBOX, getMap, getReport, type Bbox } from './browse';
+export { checkNearby, classifyPhoto, confirmReport, createReport, voiceDraft } from './create';

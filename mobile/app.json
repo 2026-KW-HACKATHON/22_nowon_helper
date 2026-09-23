@@ -32,7 +32,22 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "문제가 있는 곳을 사진으로 남겨 주세요."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "신고 위치를 확인하려고 해요."
+        }
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
