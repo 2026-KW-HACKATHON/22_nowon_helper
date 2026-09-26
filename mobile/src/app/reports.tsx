@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DEMO_BBOX, getMap } from '@/api';
 import { BottomNav } from '@/components/bottom-nav';
+import { Icon } from '@/components/icon';
 import { useLoad } from '@/hooks/use-load';
 import { CATEGORY_LABEL, STATUS_COLOR, STATUS_LABEL } from '@/labels';
 
@@ -60,6 +62,7 @@ export default function ReportsScreen() {
               style={styles.card}
               onPress={() => router.push({ pathname: '/detail', params: { id: report.id } })}>
               <View style={styles.thumbnail}>
+                <Icon name={report.category} size={28} color="#AAB4AF" />
                 <Image
                   source={report.photos.before_thumb_url}
                   style={StyleSheet.absoluteFill}
@@ -75,12 +78,21 @@ export default function ReportsScreen() {
                   </Text>
                 </View>
                 <Text style={styles.reportTitle}>{CATEGORY_LABEL[report.category]}</Text>
-                <Text style={styles.subtitle}>
-                  {report.status === 'resolved'
-                    ? 'Before / After 보기'
-                    : `${report.confirmation_count}명 확인 · 우선순위 ${report.priority_score}`}
-                </Text>
+                <View style={styles.subtitleRow}>
+                  <Icon
+                    name={report.status === 'resolved' ? 'photo' : 'people'}
+                    size={14}
+                    color="#5C6663"
+                  />
+                  <Text style={styles.subtitle}>
+                    {report.status === 'resolved'
+                      ? 'Before / After 보기'
+                      : `${report.confirmation_count}명 확인 · 우선순위 ${report.priority_score}`}
+                  </Text>
+                </View>
               </View>
+
+              <Icon name="forward" size={18} color="#C8CFCC" style={styles.chevron} />
             </Pressable>
           ))}
         </View>
@@ -95,8 +107,8 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     width: '100%',
-    maxWidth: 390,
-    alignSelf: 'center',
+    // Full width on every phone; only the web preview keeps a phone-sized column.
+    ...Platform.select({ web: { maxWidth: 390, alignSelf: 'center' as const } }),
     backgroundColor: '#FFFFFF',
   },
   content: {
@@ -138,6 +150,8 @@ const styles = StyleSheet.create({
     height: 86,
     borderRadius: 12,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#EEF1EF',
   },
   cardText: {
@@ -159,9 +173,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#14181A',
   },
-  subtitle: {
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     marginTop: 5,
+  },
+  subtitle: {
     fontSize: 14,
     color: '#5C6663',
+  },
+  chevron: {
+    alignSelf: 'center',
   },
 });
