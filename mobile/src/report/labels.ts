@@ -1,12 +1,11 @@
 import type { AffectedGroup, Category, Severity } from '../../../contract/types';
 
 /**
- * Categories a resident can pick on screen 02.
+ * Categories a resident can pick: the home screen grid (01) and the chips on 02.
  *
- * OPEN QUESTION FOR THE TEAM: fallen_tree is missing here — CLAUDE.md and
- * the contract say all four categories are shown. Decide out loud before
- * shipping; until then this stays 3 and existing fallen_tree reports still
- * render fine everywhere else (labels come from src/labels.ts).
+ * fallen_tree is left out on purpose — the team picked three. It is still a
+ * contract value, so existing fallen_tree reports render fine everywhere
+ * else (labels come from src/labels.ts).
  */
 export const CATEGORIES: Category[] = ['broken_sidewalk', 'blocked_ramp', 'broken_facility'];
 

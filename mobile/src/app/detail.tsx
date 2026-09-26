@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -15,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PRIORITY_CAPS } from '../../../contract/types';
 import type { Report } from '../../../contract/types';
 import { confirmReport, getReport } from '@/api';
+import { Icon } from '@/components/icon';
 import { daysSince, monthDay, points } from '@/format';
 import { useLoad } from '@/hooks/use-load';
 import {
@@ -48,7 +50,7 @@ export default function DetailScreen() {
         <Pressable
           style={styles.backButton}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
-          <Text style={styles.backText}>‹</Text>
+          <Icon name="back" size={20} />
         </Pressable>
         <Text style={styles.headerTitle}>문제 상세</Text>
       </View>
@@ -62,12 +64,12 @@ export default function DetailScreen() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
             {/* The full image is loaded here and only here (CLAUDE.md, rule 7). */}
             <View style={styles.photo}>
+              <Icon name="photo" size={40} color="#AAB4AF" />
               <Image
                 source={report.photos.before_url ?? report.photos.before_thumb_url}
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
               />
-              <Text style={styles.photoText}>사진 · Before</Text>
             </View>
 
             <View style={styles.badges}>
@@ -78,6 +80,7 @@ export default function DetailScreen() {
                 </Text>
               </View>
               <View style={[styles.badge, styles.scoreBadge]}>
+                <Icon name="flame" size={14} color="#C0392B" />
                 <Text style={[styles.badgeText, styles.scoreBadgeText]}>
                   우선순위 {report.priority_score}
                 </Text>
@@ -85,13 +88,21 @@ export default function DetailScreen() {
             </View>
 
             <Text style={styles.title}>{CATEGORY_LABEL[report.category]}</Text>
-            <Text style={styles.address}>
-              {report.address} · {daysSince(report.created_at)}일 전 신고
-            </Text>
-            {report.affected_groups.length > 0 && (
-              <Text style={styles.groups}>
-                {report.affected_groups.map((group) => GROUP_LABEL[group]).join(' · ')}
+            <View style={styles.infoRow}>
+              <Icon name="location" size={15} color="#6C7572" />
+              <Text style={styles.address}>
+                {report.address} · {daysSince(report.created_at)}일 전 신고
               </Text>
+            </View>
+            {report.affected_groups.length > 0 && (
+              <View style={styles.groupRow}>
+                {report.affected_groups.map((group) => (
+                  <View key={group} style={styles.groupChip}>
+                    <Icon name={group} size={15} color="#0E8A5F" />
+                    <Text style={styles.groups}>{GROUP_LABEL[group]}</Text>
+                  </View>
+                ))}
+              </View>
             )}
 
             <PriorityCard report={report} />
@@ -136,24 +147,25 @@ export default function DetailScreen() {
 
             <View style={styles.beforeAfter}>
               <View style={styles.beforeBox}>
+                <Icon name="photo" size={26} color="#AAB4AF" />
                 <Image
                   source={report.photos.before_thumb_url}
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                 />
-                <Text style={styles.beforeText}>Before 사진</Text>
               </View>
               {report.photos.after_url ? (
                 <View style={styles.beforeBox}>
+                  <Icon name="photo" size={26} color="#AAB4AF" />
                   <Image
                     source={report.photos.after_url}
                     style={StyleSheet.absoluteFill}
                     contentFit="cover"
                   />
-                  <Text style={styles.beforeText}>After 사진</Text>
                 </View>
               ) : (
                 <View style={styles.afterBox}>
+                  <Icon name="clock" size={22} color="#AAB2AF" />
                   <Text style={styles.afterText}>대기</Text>
                 </View>
               )}
@@ -167,8 +179,13 @@ export default function DetailScreen() {
               style={[styles.confirmButton, report.confirmed_by_me && styles.confirmedButton]}
               disabled={report.confirmed_by_me}
               onPress={confirm}>
+              <Icon
+                name={report.confirmed_by_me ? 'check' : 'people'}
+                size={20}
+                color={report.confirmed_by_me ? '#0E8A5F' : '#FFFFFF'}
+              />
               <Text style={[styles.confirmText, report.confirmed_by_me && styles.confirmedText]}>
-                {report.confirmed_by_me ? '확인함 ✓' : '나도 확인 +1'}
+                {report.confirmed_by_me ? '확인함' : '나도 확인 +1'}
               </Text>
             </Pressable>
           )}
@@ -249,8 +266,8 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     width: '100%',
-    maxWidth: 390,
-    alignSelf: 'center',
+    // Full width on every phone; only the web preview keeps a phone-sized column.
+    ...Platform.select({ web: { maxWidth: 390, alignSelf: 'center' as const } }),
     backgroundColor: '#FFFFFF',
   },
   header: {
@@ -266,11 +283,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6F5',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  backText: {
-    fontSize: 36,
-    lineHeight: 38,
-    color: '#14181A',
   },
   headerTitle: {
     flex: 1,
@@ -297,15 +309,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoText: {
-    color: '#9BA6A1',
-  },
   badges: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 17,
   },
   badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 7,
@@ -325,15 +337,36 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#14181A',
   },
-  address: {
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     marginTop: 7,
+  },
+  address: {
+    flex: 1,
     color: '#6C7572',
     fontSize: 15,
   },
+  groupRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
+  },
+  groupChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#E7F3EE',
+  },
   groups: {
-    marginTop: 5,
-    color: '#6C7572',
-    fontSize: 14,
+    color: '#0E8A5F',
+    fontSize: 13,
+    fontWeight: '700',
   },
   priorityCard: {
     marginTop: 25,
@@ -457,10 +490,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  beforeText: {
-    color: '#9BA6A1',
-  },
   afterText: {
+    marginTop: 4,
     color: '#AAB2AF',
   },
   confirmButton: {
@@ -470,7 +501,10 @@ const styles = StyleSheet.create({
     right: 20,
     backgroundColor: '#0E8A5F',
     paddingVertical: 19,
+    flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 16,
   },
   confirmedButton: {

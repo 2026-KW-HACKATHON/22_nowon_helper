@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Icon, type IconName } from '@/components/icon';
 
 /** Same palette as the browse screens. */
 export const C = {
@@ -40,7 +41,13 @@ export function SecondaryButton(props: { label: string; onPress: () => void; dis
   );
 }
 
-export function Choice(props: { label: string; selected: boolean; hinted?: boolean; onPress: () => void }) {
+export function Choice(props: {
+  label: string;
+  icon?: IconName;
+  selected: boolean;
+  hinted?: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -52,8 +59,23 @@ export function Choice(props: { label: string; selected: boolean; hinted?: boole
         props.selected && s.choiceSelected,
         pressed && s.pressed,
       ]}>
+      {props.icon ? <Icon name={props.icon} size={24} color={props.selected ? C.green : C.textSoft} /> : null}
       <Text style={[s.choiceText, props.selected && s.choiceTextSelected]}>{props.label}</Text>
       {props.hinted && !props.selected ? <Text style={s.hintTag}>AI 추천</Text> : null}
+    </Pressable>
+  );
+}
+
+/** A small pill — single-line choices on 02 (category, severity). */
+export function Chip(props: { label: string; icon?: IconName; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: props.selected }}
+      onPress={props.onPress}
+      style={({ pressed }) => [s.chip, props.selected && s.chipSelected, pressed && s.pressed]}>
+      {props.icon ? <Icon name={props.icon} size={16} color={props.selected ? '#FFFFFF' : C.green} /> : null}
+      <Text style={[s.chipText, props.selected && s.chipTextSelected]}>{props.label}</Text>
     </Pressable>
   );
 }
@@ -112,6 +134,21 @@ const s = StyleSheet.create({
   choiceText: { color: C.text, fontSize: 18, fontWeight: '600', textAlign: 'center' },
   choiceTextSelected: { color: C.green },
   hintTag: { color: C.green, fontSize: 14, fontWeight: '700' },
+  chip: {
+    minHeight: 44,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  chipSelected: { borderColor: C.green, backgroundColor: C.green },
+  chipText: { color: C.text, fontSize: 16, fontWeight: '600' },
+  chipTextSelected: { color: '#FFFFFF' },
   section: { color: C.textSoft, fontSize: 16, fontWeight: '700', marginTop: 8 },
   error: { borderRadius: 12, backgroundColor: '#FBEAEA', padding: 12 },
   errorText: { color: C.red, fontSize: 17 },

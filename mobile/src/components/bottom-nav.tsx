@@ -1,32 +1,33 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-type Tab = 'home' | 'reports';
+import { Icon, type IconName } from './icon';
+
+type Tab = 'home' | 'map' | 'reports';
 
 /**
- * The tab bar, shared by the browse screens. 음성 belongs to the create
+ * The tab bar: 01 홈, 04 지도, 06 내 신고. 음성 belongs to the create
  * path (FE-1) and has no screen yet, so it is shown but does nothing.
  */
 export function BottomNav({ active }: { active: Tab }) {
-  const items: { label: string; tab: Tab | null; go?: () => void }[] = [
-    { label: '홈', tab: 'home', go: () => router.replace('/') },
-    { label: '지도', tab: 'home', go: () => router.replace('/') },
-    { label: '내 신고', tab: 'reports', go: () => router.replace('/reports') },
-    { label: '음성', tab: null },
+  const items: { label: string; icon: IconName; tab: Tab | null; go?: () => void }[] = [
+    { label: '홈', icon: 'home', tab: 'home', go: () => router.replace('/') },
+    { label: '지도', icon: 'map', tab: 'map', go: () => router.replace('/map') },
+    { label: '내 신고', icon: 'list', tab: 'reports', go: () => router.replace('/reports') },
+    { label: '음성', icon: 'mic', tab: null },
   ];
 
   return (
     <View style={styles.bar}>
-      {items.map((item, index) => {
-        // 홈 and 지도 are the same screen for now; only 홈 lights up.
-        const isActive = item.tab === active && !(active === 'home' && index === 1);
+      {items.map((item) => {
+        const isActive = item.tab === active;
         return (
           <Pressable
             key={item.label}
             style={styles.item}
             disabled={!item.go || isActive}
             onPress={item.go}>
-            <View style={[styles.icon, isActive && styles.activeIcon]} />
+            <Icon name={item.icon} size={24} color={isActive ? '#0E8A5F' : '#A3ACA8'} />
             <Text style={[styles.text, isActive && styles.activeText]}>{item.label}</Text>
           </Pressable>
         );
@@ -49,15 +50,6 @@ const styles = StyleSheet.create({
     width: 56,
     alignItems: 'center',
     gap: 6,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: '#CCD2D0',
-  },
-  activeIcon: {
-    backgroundColor: '#0E8A5F',
   },
   text: {
     color: '#84908B',

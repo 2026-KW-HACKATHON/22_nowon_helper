@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,49 +13,33 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Report } from '../../../contract/types';
+import type { Category, Report } from '../../../contract/types';
 import { confirmReport, DEMO_BBOX, getMap } from '@/api';
 import { BottomNav } from '@/components/bottom-nav';
-import { NeighborhoodMap } from '@/components/neighborhood-map';
-import { daysSince } from '@/format';
+import { Icon } from '@/components/icon';
 import { useLoad } from '@/hooks/use-load';
-import { CATEGORY_LABEL, priorityColor } from '@/labels';
+import { CATEGORY_LABEL } from '@/labels';
+import { CATEGORIES } from '@/report/labels';
 
-/**
- * Until GPS is wired: the resident stands where the nearby fixture
- * says, 32 m from report 1042.
- */
+/** Same spot as the map screen: 32 m from report 1042 in the fixtures. */
 const DEMO_LOCATION = { lat: 37.62012, lng: 127.05981 };
+const NEARBY_RADIUS_M = 500;
+const NEARBY_SHOWN = 3;
 
+/** Screen 01 — home: pick what is wrong, see what is already reported nearby. */
 export default function HomeScreen() {
   const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
+  const [category, setCategory] = useState<Category | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  // A finger on the map pans the map, not the page.
-  const [pageScroll, setPageScroll] = useState(true);
 
-  const reports = data?.reports ?? [];
-  const counts = data?.counts;
-  const urgent = reports
+  const nearby = (data?.reports ?? [])
     .filter((report) => report.status !== 'resolved')
-    .sort((a, b) => b.priority_score - a.priority_score)[0];
+    .map((report) => ({ report, distance: distanceM(DEMO_LOCATION, report) }))
+    .filter((item) => item.distance <= NEARBY_RADIUS_M)
+    .sort((a, b) => a.distance - b.distance);
 
-  const pins = useMemo(
-    () => ({
-      me: DEMO_LOCATION,
-      reports: (data?.reports ?? []).map((report) => ({
-        id: report.id,
-        lat: report.lat,
-        lng: report.lng,
-        score: report.priority_score,
-        color: priorityColor(report.priority_score),
-        faded: report.status === 'resolved',
-      })),
-    }),
-    [data],
-  );
-
-  const openDetailById = (id: string) => router.push({ pathname: '/detail', params: { id } });
-  const openDetail = (report: Report) => openDetailById(report.id);
+  const startReport = () =>
+    router.push(category ? { pathname: '/report', params: { category } } : '/report');
 
   const confirm = async (report: Report) => {
     try {
@@ -71,212 +56,190 @@ export default function HomeScreen() {
 
       <ScrollView
         style={styles.screen}
-        scrollEnabled={pageScroll}
+        contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
-        <View style={styles.locationBox}>
-          <View style={styles.greenDot} />
-          <Text style={styles.locationText}>월계동</Text>
+        <View style={styles.locationRow}>
+          <Icon name="location" size={16} color="#0E8A5F" />
+          <Text style={styles.locationText}>월계동 · 광운대 인근</Text>
         </View>
 
-        {counts && (
-          <View style={styles.chips}>
-            <View style={[styles.chip, styles.activeChip]}>
-              <Text style={styles.activeChipText}>
-                전체 {counts.new + counts.in_progress + counts.resolved}
-              </Text>
-            </View>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>신규 {counts.new}</Text>
-            </View>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>처리중 {counts.in_progress}</Text>
-            </View>
-            <View style={styles.chip}>
-              <Text style={styles.chipText}>해결 {counts.resolved}</Text>
-            </View>
-          </View>
-        )}
+        <Text style={styles.title}>무엇이{'\n'}불편하신가요?</Text>
+        <Text style={styles.subtitle}>사진 한 장으로 신고가 끝납니다</Text>
 
-        <View
-          onTouchStart={() => setPageScroll(false)}
-          onTouchEnd={() => setPageScroll(true)}
-          onTouchCancel={() => setPageScroll(true)}>
-          <NeighborhoodMap
-            bbox={DEMO_BBOX}
-            data={pins}
-            onSelect={openDetailById}
-            style={styles.map}
-          />
-        </View>
-
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
-
-          {error && <Text style={styles.message}>{error}</Text>}
-          {!data && !error && <Text style={styles.message}>불러오는 중…</Text>}
-
-          {urgent && (
-            <>
-              <View style={styles.sheetHeading}>
-                <Text style={styles.sheetTitle}>가장 시급한 문제</Text>
-                <View style={styles.priorityPill}>
-                  <Text style={styles.priorityPillText}>우선순위 {urgent.priority_score}</Text>
+        <View style={styles.grid}>
+          {CATEGORIES.map((c) => {
+            const selected = category === c;
+            return (
+              <Pressable
+                key={c}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[styles.tile, selected && styles.tileSelected]}
+                onPress={() => setCategory(selected ? null : c)}>
+                <View style={[styles.tileIcon, selected && styles.tileIconSelected]}>
+                  <Icon name={c} size={20} color={selected ? '#FFFFFF' : '#0E8A5F'} />
                 </View>
-              </View>
-
-              <Pressable style={styles.reportRow} onPress={() => openDetail(urgent)}>
-                <View style={styles.thumbnail}>
-                  <Image
-                    source={urgent.photos.before_thumb_url}
-                    style={StyleSheet.absoluteFill}
-                    contentFit="cover"
-                  />
-                  <Text style={styles.thumbnailText}>사진</Text>
-                </View>
-
-                <View style={styles.reportInfo}>
-                  <Text style={styles.reportTitle}>{CATEGORY_LABEL[urgent.category]}</Text>
-                  <Text style={styles.reportSub}>
-                    {urgent.confirmation_count}명 확인 · {daysSince(urgent.created_at)}일 경과
-                  </Text>
-                  <View style={styles.priorityTrack}>
-                    <View
-                      style={[
-                        styles.priorityFill,
-                        {
-                          width: `${urgent.priority_score}%`,
-                          backgroundColor: priorityColor(urgent.priority_score),
-                        },
-                      ]}
-                    />
-                  </View>
-                </View>
+                <Text style={[styles.tileText, selected && styles.tileTextSelected]}>{CATEGORY_LABEL[c]}</Text>
               </Pressable>
-
-              <View style={styles.actionRow}>
-                <Pressable
-                  style={[styles.confirmButton, urgent.confirmed_by_me && styles.confirmedButton]}
-                  disabled={urgent.confirmed_by_me}
-                  onPress={() => confirm(urgent)}>
-                  <Text
-                    style={[styles.confirmText, urgent.confirmed_by_me && styles.confirmedText]}>
-                    {urgent.confirmed_by_me ? '확인함 ✓' : '확인 +1'}
-                  </Text>
-                </Pressable>
-
-                <Pressable style={styles.detailButton} onPress={() => openDetail(urgent)}>
-                  <Text style={styles.detailButtonText}>상세</Text>
-                </Pressable>
-              </View>
-
-              {notice && <Text style={styles.message}>{notice}</Text>}
-            </>
-          )}
+            );
+          })}
         </View>
+
+        <View style={styles.sectionHeading}>
+          <Text style={styles.sectionTitle}>내 주변 문제 {nearby.length}건</Text>
+          <Pressable onPress={() => router.push('/map')} hitSlop={8}>
+            <Text style={styles.link}>지도에서 보기</Text>
+          </Pressable>
+        </View>
+
+        {error && <Text style={styles.message}>{error}</Text>}
+        {!data && !error && <Text style={styles.message}>불러오는 중…</Text>}
+        {data && nearby.length === 0 && <Text style={styles.message}>주변에 신고된 문제가 없어요.</Text>}
+
+        {nearby.slice(0, NEARBY_SHOWN).map(({ report, distance }) => (
+          <Pressable
+            key={report.id}
+            style={styles.row}
+            onPress={() => router.push({ pathname: '/detail', params: { id: report.id } })}>
+            <View style={styles.thumbnail}>
+              <Icon name={report.category} size={22} color="#AAB4AF" />
+              <Image source={report.photos.before_thumb_url} style={StyleSheet.absoluteFill} contentFit="cover" />
+            </View>
+            <View style={styles.rowInfo}>
+              <Text style={styles.rowTitle}>
+                {CATEGORY_LABEL[report.category]} · {Math.round(distance)}m
+              </Text>
+              <Text style={styles.rowSub}>{report.confirmation_count}명이 확인했어요</Text>
+            </View>
+            <Pressable
+              style={[styles.confirmChip, report.confirmed_by_me && styles.confirmedChip]}
+              disabled={report.confirmed_by_me}
+              onPress={() => confirm(report)}>
+              {report.confirmed_by_me && <Icon name="check" size={14} color="#84908B" />}
+              <Text style={[styles.confirmChipText, report.confirmed_by_me && styles.confirmedChipText]}>
+                {report.confirmed_by_me ? '확인함' : '확인 +1'}
+              </Text>
+            </Pressable>
+          </Pressable>
+        ))}
+
+        {notice && <Text style={styles.message}>{notice}</Text>}
       </ScrollView>
 
-      {/* TODO(FE-2 review): entry point into the create path (FE-1), wired here only
-          so the end-to-end demo scenario has a way in. Feel free to restyle/relocate. */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="신고하기"
-        style={styles.fab}
-        onPress={() => router.push('/report')}>
-        <Text style={styles.fabText}>+ 신고하기</Text>
-      </Pressable>
+      <View style={styles.footer}>
+        <Pressable accessibilityRole="button" style={styles.primary} onPress={startReport}>
+          <Icon name="camera" size={22} color="#FFFFFF" />
+          <Text style={styles.primaryText}>사진으로 신고하기</Text>
+        </Pressable>
+      </View>
 
       <BottomNav active="home" />
     </SafeAreaView>
   );
 }
 
+/** Straight-line distance in meters — enough to sort a few pins by closeness. */
+function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLng = (b.lng - a.lng) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
+}
+
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
     width: '100%',
-    maxWidth: 390,
-    alignSelf: 'center',
+    // Full width on every phone; only the web preview keeps a phone-sized column.
+    ...Platform.select({ web: { maxWidth: 390, alignSelf: 'center' as const } }),
     backgroundColor: '#FFFFFF',
   },
   screen: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  locationBox: {
-    height: 62,
-    marginHorizontal: 20,
-    marginTop: 18,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+  content: {
+    padding: 20,
+  },
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
-  },
-  greenDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#0E8A5F',
+    gap: 8,
   },
   locationText: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '800',
     color: '#14181A',
   },
-  chips: {
+  title: {
+    marginTop: 22,
+    fontSize: 30,
+    lineHeight: 38,
+    fontWeight: '900',
+    color: '#14181A',
+  },
+  subtitle: {
+    marginTop: 8,
+    fontSize: 15,
+    color: '#68736E',
+  },
+  grid: {
     flexDirection: 'row',
-    gap: 9,
-    marginHorizontal: 20,
-    marginTop: 18,
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 22,
   },
-  chip: {
-    borderRadius: 22,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+  tile: {
+    flexGrow: 1,
+    flexBasis: '30%',
+    height: 96,
+    borderRadius: 16,
+    padding: 14,
+    justifyContent: 'space-between',
+    borderWidth: 1.5,
+    borderColor: '#F3F5F4',
+    backgroundColor: '#F3F5F4',
+  },
+  tileSelected: {
+    borderColor: '#0E8A5F',
+    backgroundColor: '#E7F3EE',
+  },
+  tileIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
   },
-  activeChip: {
-    backgroundColor: '#14181A',
+  tileIconSelected: {
+    backgroundColor: '#0E8A5F',
   },
-  chipText: {
-    color: '#5C6663',
-    fontSize: 15,
+  tileText: {
+    fontSize: 16,
     fontWeight: '800',
+    color: '#14181A',
   },
-  activeChipText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
+  tileTextSelected: {
+    color: '#0E8A5F',
   },
-  map: {
-    height: 465,
-    marginTop: 20,
+  sectionHeading: {
+    marginTop: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  sheet: {
-    marginTop: -24,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    zIndex: 2,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#14181A',
   },
-  handle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    alignSelf: 'center',
-    backgroundColor: '#D7DCDA',
+  link: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0E8A5F',
   },
   message: {
     marginTop: 16,
@@ -284,128 +247,74 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  sheetHeading: {
-    marginTop: 20,
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sheetTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#14181A',
-  },
-  priorityPill: {
-    borderRadius: 18,
-    backgroundColor: '#FCE8E5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  priorityPillText: {
-    color: '#C0392B',
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  reportRow: {
-    flexDirection: 'row',
-    gap: 14,
-    marginTop: 19,
+    gap: 12,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EEF0EF',
   },
   thumbnail: {
-    width: 92,
-    height: 92,
-    borderRadius: 14,
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#EEF1EF',
   },
-  thumbnailText: {
-    color: '#AAB4AF',
-    fontSize: 13,
-  },
-  reportInfo: {
+  rowInfo: {
     flex: 1,
   },
-  reportTitle: {
-    fontSize: 20,
+  rowTitle: {
+    fontSize: 16,
     fontWeight: '900',
     color: '#14181A',
   },
-  reportSub: {
-    marginTop: 6,
+  rowSub: {
+    marginTop: 4,
+    fontSize: 13,
     color: '#68736E',
-    fontSize: 14,
   },
-  priorityTrack: {
-    height: 8,
-    marginTop: 17,
-    borderRadius: 4,
-    overflow: 'hidden',
-    backgroundColor: '#E9ECEA',
-  },
-  priorityFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  actionRow: {
+  confirmChip: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 22,
-  },
-  confirmButton: {
-    flex: 1,
-    height: 58,
-    borderRadius: 16,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0E8A5F',
-  },
-  confirmedButton: {
+    gap: 4,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     backgroundColor: '#E7F3EE',
   },
-  confirmText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
+  confirmedChip: {
+    backgroundColor: '#F3F5F4',
   },
-  confirmedText: {
+  confirmChipText: {
+    fontSize: 14,
+    fontWeight: '900',
     color: '#0E8A5F',
   },
-  detailButton: {
-    width: 106,
-    height: 58,
+  confirmedChipText: {
+    color: '#84908B',
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  primary: {
+    height: 56,
+    flexDirection: 'row',
+    gap: 8,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E1E5E3',
-    backgroundColor: '#F8F9F8',
-  },
-  detailButtonText: {
-    color: '#14181A',
-    fontSize: 17,
-    fontWeight: '900',
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 96,
-    height: 52,
-    paddingHorizontal: 20,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#0E8A5F',
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
   },
-  fabText: {
+  primaryText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
   },
 });

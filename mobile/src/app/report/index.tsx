@@ -1,12 +1,15 @@
-/** Screen 01 — camera + GPS. */
+/** Camera + GPS — opened from the home screen (01), leads to 02. */
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { Category } from '../../../../contract/types';
 import { resetDraft, updateDraft } from '@/report/draft';
+import { CATEGORIES } from '@/report/labels';
 import { locate, resetLocation } from '@/report/location';
+import { Icon } from '@/components/icon';
 import { compressPhoto } from '@/report/photo';
 import { C, ErrorText, PrimaryButton } from '@/report/ui';
 
@@ -14,20 +17,24 @@ type GpsState = 'searching' | 'ready' | 'failed';
 
 export default function CameraScreen() {
   const camera = useRef<CameraView>(null);
+  const { category } = useLocalSearchParams<{ category?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [gps, setGps] = useState<GpsState>('searching');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // A new report starts here: clear the previous draft and get the GPS fix
-  // while the resident is still aiming the camera.
+  // A new report starts here: clear the previous draft (keeping the category
+  // tapped on the home screen) and get the GPS fix while the resident is
+  // still aiming the camera.
   useEffect(() => {
-    resetDraft();
+    resetDraft(CATEGORIES.includes(category as Category) ? (category as Category) : null);
     resetLocation();
     locate().then(
       () => setGps('ready'),
       () => setGps('failed'),
     );
+    // Once per opened camera: the category param never changes on this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function retryGps() {
@@ -59,6 +66,7 @@ export default function CameraScreen() {
   if (!permission.granted) {
     return (
       <SafeAreaView style={s.permission}>
+        <Icon name="camera" size={48} color={C.green} />
         <Text style={s.permissionTitle}>카메라 권한이 필요해요</Text>
         <Text style={s.permissionBody}>문제가 있는 곳을 사진으로 남겨 주세요.</Text>
         <PrimaryButton label="권한 허용하기" onPress={requestPermission} />
@@ -73,7 +81,7 @@ export default function CameraScreen() {
       <SafeAreaView style={s.overlay} edges={['top', 'bottom']}>
         <View style={s.topBar}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button">
-            <Text style={s.close}>닫기</Text>
+            <Icon name="close" size={26} color="#FFFFFF" />
           </Pressable>
           <GpsBadge state={gps} onRetry={retryGps} />
         </View>
@@ -105,7 +113,7 @@ function GpsBadge({ state, onRetry }: { state: GpsState; onRetry: () => void }) 
   }
   return (
     <View style={s.badge}>
-      <View style={[s.dot, state === 'ready' ? s.dotReady : s.dotSearching]} />
+      <Icon name="location" size={14} color={state === 'ready' ? '#3DDC97' : '#F5C451'} />
       <Text style={s.badgeText}>{state === 'ready' ? '위치 확인됨' : '위치 찾는 중…'}</Text>
     </View>
   );
@@ -121,7 +129,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
   },
-  close: { color: '#FFFFFF', fontSize: 19, fontWeight: '600' },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,9 +140,6 @@ const s = StyleSheet.create({
   },
   badgeFailed: { backgroundColor: C.red },
   badgeText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  dotReady: { backgroundColor: '#3DDC97' },
-  dotSearching: { backgroundColor: '#F5C451' },
   bottom: { alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingBottom: 24 },
   hint: { color: '#FFFFFF', fontSize: 17, fontWeight: '600' },
   shutter: {
