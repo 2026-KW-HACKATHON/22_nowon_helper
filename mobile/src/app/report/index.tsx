@@ -11,7 +11,7 @@ import { CATEGORIES } from '@/report/labels';
 import { locate, resetLocation } from '@/report/location';
 import { Icon } from '@/components/icon';
 import { compressPhoto } from '@/report/photo';
-import { C, ErrorText, PrimaryButton } from '@/report/ui';
+import { C, ErrorText, PrimaryButton, SecondaryButton } from '@/report/ui';
 
 type GpsState = 'searching' | 'ready' | 'failed';
 
@@ -70,6 +70,8 @@ export default function CameraScreen() {
         <Text style={s.permissionTitle}>카메라 권한이 필요해요</Text>
         <Text style={s.permissionBody}>문제가 있는 곳을 사진으로 남겨 주세요.</Text>
         <PrimaryButton label="권한 허용하기" onPress={requestPermission} />
+        {/* This screen has no header, and iOS cannot swipe a full-screen modal away. */}
+        <SecondaryButton label="닫기" onPress={() => router.back()} />
       </SafeAreaView>
     );
   }

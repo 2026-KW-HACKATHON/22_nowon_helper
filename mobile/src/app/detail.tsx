@@ -32,13 +32,19 @@ export default function DetailScreen() {
   const { id = '' } = useLocalSearchParams<{ id: string }>();
   const { data: report, error, refreshing, refresh } = useLoad(() => getReport(id), id);
   const [notice, setNotice] = useState<string | null>(null);
+  // 확인 +1 in flight: a second tap must not send a second request.
+  const [confirming, setConfirming] = useState(false);
 
   const confirm = async () => {
+    if (confirming) return;
+    setConfirming(true);
     try {
       await confirmReport(id);
       await refresh();
     } catch (e) {
       setNotice(e instanceof Error ? e.message : String(e));
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -177,7 +183,7 @@ export default function DetailScreen() {
           {report.status !== 'resolved' && (
             <Pressable
               style={[styles.confirmButton, report.confirmed_by_me && styles.confirmedButton]}
-              disabled={report.confirmed_by_me}
+              disabled={report.confirmed_by_me || confirming}
               onPress={confirm}>
               <Icon
                 name={report.confirmed_by_me ? 'check' : 'people'}

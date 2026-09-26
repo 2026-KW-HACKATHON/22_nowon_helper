@@ -26,7 +26,7 @@ export default function DuplicateScreen() {
       <SafeAreaView style={s.screen}>
         <View style={s.content}>
           <ErrorText message="표시할 문제가 없어요." />
-          <SecondaryButton label="처음으로" onPress={() => router.replace('/')} />
+          <SecondaryButton label="처음으로" onPress={() => router.dismissTo('/')} />
         </View>
       </SafeAreaView>
     );
@@ -119,7 +119,7 @@ export default function DuplicateScreen() {
 
       <View style={s.footer}>
         {result || alreadyConfirmed ? (
-          <PrimaryButton label="완료" onPress={() => router.replace('/')} />
+          <PrimaryButton label="완료" onPress={() => router.dismissTo('/')} />
         ) : (
           <>
             <PrimaryButton

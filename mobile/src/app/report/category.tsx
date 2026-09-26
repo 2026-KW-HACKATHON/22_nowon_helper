@@ -15,7 +15,6 @@ import { CATEGORIES, GROUPS, SEVERITIES } from '@/report/labels';
 import { locate } from '@/report/location';
 import { submitDraft } from '@/report/submit';
 import { C, Chip, Choice, ErrorText, PrimaryButton, SectionTitle } from '@/report/ui';
-import { useVoiceDraft } from '@/report/use-voice-draft';
 
 type GpsState = 'searching' | 'ready' | 'failed';
 
@@ -55,14 +54,6 @@ export default function CategoryScreen() {
       () => setGps('failed'),
     );
   }
-
-  const voice = useVoiceDraft((result) => {
-    updateDraft({
-      voice: result,
-      ...(isPickable(result.category) ? { hint: result.category, confidence: null } : {}),
-      ...(result.affected_groups.length ? { groups: result.affected_groups } : {}),
-    });
-  });
 
   function toggleGroup(g: AffectedGroup) {
     const { groups } = draft;
@@ -179,21 +170,11 @@ export default function CategoryScreen() {
           </View>
         </Pressable>
 
-        <Pressable
-          onPress={voice.toggle}
-          disabled={voice.state === 'processing'}
-          accessibilityRole="button"
-          style={({ pressed }) => [s.voice, voice.state === 'recording' && s.voiceRecording, pressed && s.pressed]}>
-          <Icon name="mic" size={20} color={voice.state === 'recording' ? C.red : C.green} />
-          <Text style={[s.voiceText, voice.state === 'recording' && s.voiceTextRecording]}>
-            {voice.state === 'recording'
-              ? '듣고 있어요 · 눌러서 끝내기'
-              : voice.state === 'processing'
-                ? '정리하는 중…'
-                : '말로 설명하기'}
-          </Text>
-        </Pressable>
-        {draft.voice?.transcript ? <Text style={s.transcript}>“{draft.voice.transcript}”</Text> : null}
+        {/* Voice input is not part of the demo: only its place on the screen, no recording. */}
+        <View style={s.voice}>
+          <Icon name="mic" size={20} color={C.textMuted} />
+          <Text style={s.voiceText}>말로 설명하기 · 준비 중</Text>
+        </View>
 
         <ErrorText message={error} />
       </ScrollView>
@@ -205,7 +186,7 @@ export default function CategoryScreen() {
   );
 }
 
-/** Voice and AI may answer with anything — only the four known categories become a hint. */
+/** AI may answer with anything — only a category from the picker becomes a hint. */
 function isPickable(c: Category | null): c is Category {
   return c !== null && CATEGORIES.includes(c);
 }
@@ -261,10 +242,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  voiceRecording: { borderColor: C.red, backgroundColor: '#FBEAEA' },
-  voiceText: { color: C.text, fontSize: 18, fontWeight: '600' },
-  voiceTextRecording: { color: C.red },
-  transcript: { color: C.textSoft, fontSize: 17, fontStyle: 'italic' },
-  pressed: { opacity: 0.75 },
+  voiceText: { color: C.textMuted, fontSize: 18, fontWeight: '600' },
   footer: { padding: 16, paddingTop: 8 },
 });

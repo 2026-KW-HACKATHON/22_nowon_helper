@@ -34,6 +34,8 @@ export default function MapScreen() {
   const { height: screenHeight } = useWindowDimensions();
   const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
   const [notice, setNotice] = useState<string | null>(null);
+  // 확인 +1 in flight: a second tap must not send a second request.
+  const [confirming, setConfirming] = useState(false);
   // A finger on the map pans the map, not the page.
   const [pageScroll, setPageScroll] = useState(true);
 
@@ -62,11 +64,15 @@ export default function MapScreen() {
   const openDetail = (report: Report) => openDetailById(report.id);
 
   const confirm = async (report: Report) => {
+    if (confirming) return;
+    setConfirming(true);
     try {
       await confirmReport(report.id);
       await refresh();
     } catch (e) {
       setNotice(e instanceof Error ? e.message : String(e));
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -162,7 +168,7 @@ export default function MapScreen() {
               <View style={styles.actionRow}>
                 <Pressable
                   style={[styles.confirmButton, urgent.confirmed_by_me && styles.confirmedButton]}
-                  disabled={urgent.confirmed_by_me}
+                  disabled={urgent.confirmed_by_me || confirming}
                   onPress={() => confirm(urgent)}>
                   <Icon
                     name={urgent.confirmed_by_me ? 'check' : 'people'}
