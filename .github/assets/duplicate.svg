@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" role="img" aria-label="Duplicate search: an open report of the same category within 50 meters">
+  <style>
+    svg{--surface:#FFFFFF;--surface-2:#F5F7F5;--ink:#14181A;--ink-2:#5C6663;--ink-3:#8A938F;--line:#D7DDD9;--line-2:#B9C2BD;--accent:#0E8A5F;--accent-deep:#0A6B4A;--accent-tint:#E6F2EC;--crit:#C0392B;--warn:#B87503;--on-accent:#FFFFFF;font-family:ui-monospace,SFMono-Regular,'Cascadia Mono',Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace}
+    @media (prefers-color-scheme:dark){svg{--surface:#161B19;--surface-2:#1D2321;--ink:#E7ECE9;--ink-2:#9BA6A1;--ink-3:#6E7A75;--line:#2A322E;--line-2:#3E4842;--accent:#35C08B;--accent-deep:#7DDCB4;--accent-tint:#12332A;--crit:#E8776A;--warn:#DFA63C;--on-accent:#0F1311}}
+    .bg{fill:var(--surface);stroke:var(--line)}
+    .box{fill:var(--surface-2);stroke:var(--line-2)}
+    .card{fill:var(--surface);stroke:var(--line)}
+    .grid{stroke:var(--line);stroke-width:1}
+    .t{fill:var(--ink)} .t2{fill:var(--ink-2)} .t3{fill:var(--ink-3)} .ta{fill:var(--accent-deep)} .tac{fill:var(--accent)} .tw{fill:var(--warn)} .tc{fill:var(--crit)} .tx{fill:var(--on-accent)} .ts{fill:var(--surface)}
+    .fa{fill:var(--accent)} .fw{fill:var(--warn)} .f3{fill:var(--ink-3)}
+    .la{stroke:var(--accent);fill:none}
+    .b{font-weight:600}
+  </style>
+
+  <rect x="0.5" y="0.5" width="999" height="429" rx="14" class="bg"/>
+
+  <g class="grid">
+    <line x1="40" y1="60" x2="620" y2="60"/><line x1="40" y1="130" x2="620" y2="130"/>
+    <line x1="40" y1="200" x2="620" y2="200"/><line x1="40" y1="270" x2="620" y2="270"/>
+    <line x1="40" y1="340" x2="620" y2="340"/>
+    <line x1="40" y1="60" x2="40" y2="340"/><line x1="185" y1="60" x2="185" y2="340"/>
+    <line x1="330" y1="60" x2="330" y2="340"/><line x1="475" y1="60" x2="475" y2="340"/>
+    <line x1="620" y1="60" x2="620" y2="340"/>
+  </g>
+
+  <!-- radius -->
+  <circle cx="330" cy="200" r="118" class="fa" fill-opacity=".08" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <line x1="330" y1="200" x2="448" y2="200" class="la" stroke-width="1.3"/>
+  <text x="362" y="192" font-size="11" class="ta b">R = 50 m</text>
+
+  <!-- the new photo -->
+  <circle cx="330" cy="200" r="13" class="fa"/>
+  <circle cx="330" cy="200" r="21" class="la" stroke-width="1.5"/>
+  <text x="330" y="204" text-anchor="middle" font-size="10" class="tx b">NEW</text>
+  <text x="330" y="246" text-anchor="middle" font-size="11" class="t b">new photo</text>
+  <text x="330" y="262" text-anchor="middle" font-size="10.5" class="t2">broken sidewalk · GPS ±8 m</text>
+
+  <!-- the match -->
+  <circle cx="262" cy="140" r="15" class="fw"/>
+  <text x="262" y="145" text-anchor="middle" font-size="11" class="tx b">12</text>
+  <text x="262" y="118" text-anchor="middle" font-size="10.5" class="t b">#1042 · 32 m</text>
+  <text x="262" y="104" text-anchor="middle" font-size="10" class="tw">broken sidewalk · in progress</text>
+  <path d="M282 158 L314 186" class="la" stroke-width="2"/>
+  <rect x="206" y="164" width="112" height="20" rx="5" class="fa"/>
+  <text x="262" y="178" text-anchor="middle" font-size="10.5" class="tx b">SAME PROBLEM</text>
+
+  <!-- inside, other category -->
+  <circle cx="400" cy="290" r="13" class="f3"/>
+  <text x="400" y="295" text-anchor="middle" font-size="10.5" class="ts b">3</text>
+  <text x="422" y="288" font-size="10.5" class="t b">#1081 · 45 m</text>
+  <text x="422" y="302" font-size="10" class="t2">fallen tree,</text>
+  <text x="422" y="315" font-size="10" class="t2">other category</text>
+  <text x="422" y="329" font-size="10" class="tc">not a duplicate</text>
+
+  <!-- outside -->
+  <circle cx="536" cy="126" r="13" class="f3"/>
+  <text x="536" y="131" text-anchor="middle" font-size="10.5" class="ts b">5</text>
+  <text x="536" y="100" text-anchor="middle" font-size="10.5" class="t b">#0977 · 140 m</text>
+  <text x="536" y="86" text-anchor="middle" font-size="10" class="t2">broken sidewalk, but far</text>
+  <text x="536" y="154" text-anchor="middle" font-size="10" class="tc">not a duplicate</text>
+
+  <!-- inside, resolved -->
+  <circle cx="276" cy="284" r="13" class="f3" fill-opacity=".45"/>
+  <text x="276" y="289" text-anchor="middle" font-size="10.5" class="t2 b">9</text>
+  <text x="196" y="302" text-anchor="middle" font-size="10.5" class="t2 b">#0845 · resolved</text>
+  <text x="196" y="316" text-anchor="middle" font-size="10" class="tc">closed, not a duplicate</text>
+
+  <!-- the four rules -->
+  <rect x="668" y="60" width="304" height="284" rx="12" class="box"/>
+  <text x="686" y="90" font-size="12" class="t b">A duplicate only if ALL four are true</text>
+
+  <rect x="686" y="106" width="268" height="50" rx="8" class="card"/>
+  <text x="700" y="126" font-size="11.5" class="tac b">1 · distance ≤ 50 m</text>
+  <text x="700" y="144" font-size="10.5" class="t2">ST_DWithin(geom, point, 50)</text>
+
+  <rect x="686" y="164" width="268" height="50" rx="8" class="card"/>
+  <text x="700" y="184" font-size="11.5" class="tac b">2 · same category</text>
+  <text x="700" y="202" font-size="10.5" class="t2">a tree and a sidewalk are different</text>
+
+  <rect x="686" y="222" width="268" height="50" rx="8" class="card"/>
+  <text x="700" y="242" font-size="11.5" class="tac b">3 · not resolved</text>
+  <text x="700" y="260" font-size="10.5" class="t2">fixed, then broken again → new report</text>
+
+  <rect x="686" y="280" width="268" height="50" rx="8" class="card"/>
+  <text x="700" y="300" font-size="11.5" class="tac b">4 · not older than 30 days</text>
+  <text x="700" y="318" font-size="10.5" class="t2">or the list grows forever</text>
+
+  <text x="40" y="384" font-size="10.5" class="t2">The grid is a sketch of a map. The closest match becomes the 확인 +1 offer.</text>
+  <text x="40" y="402" font-size="10.5" class="t3">One SQL query. The GIST index on geom answers it in milliseconds.</text>
+</svg>

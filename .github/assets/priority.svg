@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="Priority 78 out of 100, split into four parts">
+  <style>
+    svg{--surface:#FFFFFF;--surface-2:#F5F7F5;--ink:#14181A;--ink-2:#5C6663;--ink-3:#8A938F;--line:#D7DDD9;--line-2:#B9C2BD;--accent:#0E8A5F;--accent-deep:#0A6B4A;--crit:#C0392B;--warn:#B87503;--on-accent:#FFFFFF;font-family:ui-monospace,SFMono-Regular,'Cascadia Mono',Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace}
+    @media (prefers-color-scheme:dark){svg{--surface:#161B19;--surface-2:#1D2321;--ink:#E7ECE9;--ink-2:#9BA6A1;--ink-3:#6E7A75;--line:#2A322E;--line-2:#3E4842;--accent:#35C08B;--accent-deep:#7DDCB4;--crit:#E8776A;--warn:#DFA63C;--on-accent:#0F1311}}
+    .bg{fill:var(--surface);stroke:var(--line)}
+    .ghost{fill:var(--surface-2);stroke:var(--line)}
+    .t{fill:var(--ink)} .t2{fill:var(--ink-2)} .t3{fill:var(--ink-3)} .ta{fill:var(--accent)} .tad{fill:var(--accent-deep)} .tw{fill:var(--warn)} .tc{fill:var(--crit)} .tx{fill:var(--on-accent)}
+    .fa{fill:var(--accent)} .fad{fill:var(--accent-deep)} .fw{fill:var(--warn)} .fc{fill:var(--crit)}
+    .tick{stroke:var(--line-2)} .mark{stroke:var(--ink);stroke-width:1.5}
+    .c-a{fill:var(--surface-2);stroke:var(--accent)} .c-ad{fill:var(--surface-2);stroke:var(--accent-deep)} .c-w{fill:var(--surface-2);stroke:var(--warn)} .c-c{fill:var(--surface-2);stroke:var(--crit)}
+    .b{font-weight:600}
+  </style>
+
+  <rect x="0.5" y="0.5" width="999" height="299" rx="14" class="bg"/>
+  <text x="30" y="36" font-size="12.5" class="t b">보도블록 파손 · 광운로 20 앞: how it gets 78</text>
+
+  <rect x="30" y="58" width="940" height="46" rx="8" class="ghost"/>
+  <rect x="30" y="58" width="282" height="46" rx="8" class="fa"/>
+  <rect x="300" y="58" width="12" height="46" class="fa"/>
+  <rect x="312" y="58" width="329" height="46" class="fad"/>
+  <rect x="641" y="58" width="28" height="46" class="fw"/>
+  <rect x="669" y="58" width="94" height="46" class="fc"/>
+
+  <text x="171" y="87" text-anchor="middle" font-size="14" class="tx b">30</text>
+  <text x="476" y="87" text-anchor="middle" font-size="14" class="tx b">35</text>
+  <text x="655" y="87" text-anchor="middle" font-size="12" class="tx b">3</text>
+  <text x="716" y="87" text-anchor="middle" font-size="14" class="tx b">10</text>
+  <text x="866" y="87" text-anchor="middle" font-size="12.5" class="t3">room left 22</text>
+
+  <g font-size="10.5" class="t3">
+    <line x1="30" y1="110" x2="30" y2="118" class="tick"/><text x="30" y="132" text-anchor="middle">0</text>
+    <line x1="265" y1="110" x2="265" y2="118" class="tick"/><text x="265" y="132" text-anchor="middle">25</text>
+    <line x1="500" y1="110" x2="500" y2="118" class="tick"/><text x="500" y="132" text-anchor="middle">50</text>
+    <line x1="735" y1="110" x2="735" y2="118" class="tick"/><text x="735" y="132" text-anchor="middle">75</text>
+    <line x1="970" y1="110" x2="970" y2="118" class="tick"/><text x="970" y="132" text-anchor="middle">100</text>
+  </g>
+  <line x1="763" y1="50" x2="763" y2="118" class="mark"/>
+  <text x="771" y="46" font-size="13" class="t b">78 / 100</text>
+
+  <rect x="30" y="156" width="222" height="112" rx="9" class="c-a"/>
+  <rect x="30" y="156" width="222" height="5" rx="2" class="fa"/>
+  <text x="46" y="182" font-size="12" class="t b">Confirmations · 30</text>
+  <text x="46" y="202" font-size="10.5" class="t2">2.5 points a person</text>
+  <text x="46" y="219" font-size="10.5" class="t2">capped at 30, so fake</text>
+  <text x="46" y="236" font-size="10.5" class="t2">taps cannot win alone</text>
+  <text x="46" y="258" font-size="10.5" class="ta b">13 people → 32.5 → 30</text>
+
+  <rect x="268" y="156" width="222" height="112" rx="9" class="c-ad"/>
+  <rect x="268" y="156" width="222" height="5" rx="2" class="fad"/>
+  <text x="284" y="182" font-size="12" class="t b">Severity · 35</text>
+  <text x="284" y="202" font-size="10.5" class="t2">low 12 · medium 22</text>
+  <text x="284" y="219" font-size="10.5" class="t2">high 35</text>
+  <text x="284" y="236" font-size="10.5" class="t2">set by the author</text>
+  <text x="284" y="258" font-size="10.5" class="tad b">high → 35</text>
+
+  <rect x="506" y="156" width="222" height="112" rx="9" class="c-w"/>
+  <rect x="506" y="156" width="222" height="5" rx="2" class="fw"/>
+  <text x="522" y="182" font-size="12" class="t b">Duration · 3</text>
+  <text x="522" y="202" font-size="10.5" class="t2">0.75 a day of waiting</text>
+  <text x="522" y="219" font-size="10.5" class="t2">capped at 15: a forgotten</text>
+  <text x="522" y="236" font-size="10.5" class="t2">problem rises by itself</text>
+  <text x="522" y="258" font-size="10.5" class="tw b">4 days → 3</text>
+
+  <rect x="744" y="156" width="226" height="112" rx="9" class="c-c"/>
+  <rect x="744" y="156" width="226" height="5" rx="2" class="fc"/>
+  <text x="760" y="182" font-size="12" class="t b">Who it blocks · 10</text>
+  <text x="760" y="202" font-size="10.5" class="t2">5 for each group</text>
+  <text x="760" y="219" font-size="10.5" class="t2">wheelchair · elderly</text>
+  <text x="760" y="236" font-size="10.5" class="t2">stroller · blind · max 20</text>
+  <text x="760" y="258" font-size="10.5" class="tc b">2 groups → 10</text>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="The loop: photo, duplicate check, confirmation, priority, operator, resolved with a photo">
+  <style>
+    svg{--surface:#FFFFFF;--surface-2:#F5F7F5;--ink:#14181A;--ink-2:#5C6663;--ink-3:#8A938F;--line:#D7DDD9;--line-2:#B9C2BD;--accent:#0E8A5F;--accent-deep:#0A6B4A;--accent-tint:#E6F2EC;--warn:#B87503;--warn-tint:#FBF1DC;font-family:ui-monospace,SFMono-Regular,'Cascadia Mono',Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace}
+    @media (prefers-color-scheme:dark){svg{--surface:#161B19;--surface-2:#1D2321;--ink:#E7ECE9;--ink-2:#9BA6A1;--ink-3:#6E7A75;--line:#2A322E;--line-2:#3E4842;--accent:#35C08B;--accent-deep:#7DDCB4;--accent-tint:#12332A;--warn:#DFA63C;--warn-tint:#33270F}}
+    .bg{fill:var(--surface);stroke:var(--line)}
+    .box{fill:var(--surface-2);stroke:var(--line-2)}
+    .abox{fill:var(--accent-tint);stroke:var(--accent);stroke-width:1.5}
+    .wbox{fill:var(--warn-tint);stroke:var(--warn)}
+    .t{fill:var(--ink)} .t2{fill:var(--ink-2)} .t3{fill:var(--ink-3)} .ta{fill:var(--accent-deep)} .tw{fill:var(--warn)}
+    .fa{fill:var(--accent)} .f3{fill:var(--ink-3)}
+    .l{stroke:var(--ink-3);stroke-width:1.5;fill:none} .la{stroke:var(--accent);stroke-width:1.5;fill:none}
+    .d{stroke-dasharray:5 4} .b{font-weight:600}
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f3"/></marker>
+    <marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fa"/></marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="999" height="299" rx="14" class="bg"/>
+
+  <g transform="translate(45 0)">
+    <rect x="8" y="78" width="122" height="74" rx="10" class="box"/>
+    <text x="69" y="106" text-anchor="middle" font-size="13" class="t b">사진 신고</text>
+    <text x="69" y="126" text-anchor="middle" font-size="11" class="t2">photo + GPS</text>
+
+    <rect x="158" y="78" width="132" height="74" rx="10" class="abox"/>
+    <text x="224" y="102" text-anchor="middle" font-size="13" class="ta b">중복 감지</text>
+    <text x="224" y="120" text-anchor="middle" font-size="11" class="ta">same problem</text>
+    <text x="224" y="134" text-anchor="middle" font-size="11" class="ta">within 50 m?</text>
+
+    <rect x="318" y="78" width="126" height="74" rx="10" class="abox"/>
+    <text x="381" y="106" text-anchor="middle" font-size="13" class="ta b">확인 +1</text>
+    <text x="381" y="126" text-anchor="middle" font-size="11" class="ta">12 → 13 people</text>
+
+    <rect x="472" y="78" width="126" height="74" rx="10" class="abox"/>
+    <text x="535" y="106" text-anchor="middle" font-size="13" class="ta b">우선순위</text>
+    <text x="535" y="126" text-anchor="middle" font-size="11" class="ta">score 78 / 100</text>
+
+    <rect x="626" y="78" width="126" height="74" rx="10" class="wbox"/>
+    <text x="689" y="106" text-anchor="middle" font-size="13" class="tw b">처리중</text>
+    <text x="689" y="126" text-anchor="middle" font-size="11" class="tw">district office</text>
+
+    <rect x="780" y="78" width="122" height="74" rx="10" class="box"/>
+    <text x="841" y="106" text-anchor="middle" font-size="13" class="t b">해결</text>
+    <text x="841" y="126" text-anchor="middle" font-size="11" class="t2">after photo</text>
+
+    <path d="M130 115 L152 115" class="l" marker-end="url(#ar)"/>
+    <path d="M290 115 L312 115" class="la" marker-end="url(#ara)"/>
+    <path d="M444 115 L466 115" class="la" marker-end="url(#ara)"/>
+    <path d="M598 115 L620 115" class="la" marker-end="url(#ara)"/>
+    <path d="M752 115 L774 115" class="l" marker-end="url(#ar)"/>
+
+    <path d="M841 152 L841 218 Q841 236 823 236 L87 236 Q69 236 69 218 L69 158" class="l d" marker-end="url(#ar)"/>
+    <text x="455" y="260" text-anchor="middle" font-size="11.5" class="t2">the after photo goes back to everyone who confirmed, so they confirm again next time</text>
+
+    <path d="M224 78 L224 50 L381 50 L381 74" class="l d"/>
+    <text x="302" y="40" text-anchor="middle" font-size="11" class="t3">no duplicate → a new report, count = 1</text>
+    <circle cx="381" cy="76" r="3" class="f3"/>
+  </g>
+</svg>

@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" role="img" aria-label="System map: mobile app and admin web talk to the API, the API talks to Supabase and Kakao">
+  <style>
+    svg{--surface:#FFFFFF;--surface-2:#F5F7F5;--ink:#14181A;--ink-2:#5C6663;--ink-3:#8A938F;--line:#D7DDD9;--line-2:#B9C2BD;--accent:#0E8A5F;--accent-deep:#0A6B4A;--accent-tint:#E6F2EC;--warn:#B87503;--warn-tint:#FBF1DC;font-family:ui-monospace,SFMono-Regular,'Cascadia Mono',Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace}
+    @media (prefers-color-scheme:dark){svg{--surface:#161B19;--surface-2:#1D2321;--ink:#E7ECE9;--ink-2:#9BA6A1;--ink-3:#6E7A75;--line:#2A322E;--line-2:#3E4842;--accent:#35C08B;--accent-deep:#7DDCB4;--accent-tint:#12332A;--warn:#DFA63C;--warn-tint:#33270F}}
+    .bg{fill:var(--surface);stroke:var(--line)}
+    .box{fill:var(--surface-2);stroke:var(--line-2)}
+    .card{fill:var(--surface);stroke:var(--line)}
+    .abox{fill:var(--accent-tint);stroke:var(--accent);stroke-width:1.5}
+    .acard{fill:var(--surface);stroke:var(--accent);stroke-opacity:.45}
+    .wbox{fill:var(--warn-tint);stroke:var(--warn)}
+    .t{fill:var(--ink)} .t2{fill:var(--ink-2)} .t3{fill:var(--ink-3)} .ta{fill:var(--accent-deep)} .tac{fill:var(--accent)} .tw{fill:var(--warn)}
+    .fa{fill:var(--accent)} .fw{fill:var(--warn)} .f3{fill:var(--ink-3)}
+    .sep{stroke:var(--line-2)} .asep{stroke:var(--accent);stroke-opacity:.45}
+    .l{stroke:var(--ink-3);stroke-width:1.6;fill:none} .la{stroke:var(--accent);stroke-width:1.8;fill:none} .lw{stroke:var(--warn);stroke-width:1.6;fill:none}
+    .d{stroke-dasharray:6 5} .b{font-weight:600} .cap{letter-spacing:1.4px}
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fa"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="f3"/></marker>
+    <marker id="w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fw"/></marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="999" height="529" rx="14" class="bg"/>
+
+  <text x="30" y="24" font-size="11" class="t3 b cap">CLIENTS</text>
+  <text x="290" y="24" font-size="11" class="t3 b cap">OUR API</text>
+  <text x="570" y="24" font-size="11" class="t3 b cap">SUPABASE</text>
+  <text x="820" y="24" font-size="11" class="t3 b cap">OUTSIDE</text>
+
+  <!-- mobile -->
+  <rect x="30" y="60" width="220" height="180" rx="12" class="box"/>
+  <text x="46" y="86" font-size="13.5" class="t b">Mobile app</text>
+  <text x="46" y="104" font-size="11" class="t2">React Native · Expo Go</text>
+  <line x1="46" y1="116" x2="234" y2="116" class="sep"/>
+  <text x="46" y="136" font-size="11" class="t2">camera · GPS · 확인 +1</text>
+  <rect x="46" y="150" width="188" height="30" rx="7" class="card"/>
+  <text x="56" y="169" font-size="10.5" class="t2">Kakao map in a WebView</text>
+  <rect x="46" y="188" width="188" height="30" rx="7" class="card"/>
+  <text x="56" y="207" font-size="10.5" class="t2">X-Device-Id, no sign-up</text>
+
+  <!-- admin -->
+  <rect x="30" y="270" width="220" height="130" rx="12" class="box"/>
+  <text x="46" y="296" font-size="13.5" class="t b">Admin web</text>
+  <text x="46" y="314" font-size="11" class="t2">React · district office</text>
+  <line x1="46" y1="326" x2="234" y2="326" class="sep"/>
+  <text x="46" y="346" font-size="11" class="t2">list by score · status</text>
+  <text x="46" y="364" font-size="11" class="t2">close with an after photo</text>
+  <text x="46" y="386" font-size="11" class="tw">the only login</text>
+
+  <!-- api -->
+  <rect x="290" y="60" width="220" height="340" rx="12" class="abox"/>
+  <text x="306" y="86" font-size="13.5" class="ta b">Node + Express</text>
+  <text x="306" y="104" font-size="11" class="ta">Railway · 9 endpoints</text>
+  <line x1="306" y1="116" x2="494" y2="116" class="asep"/>
+  <rect x="306" y="128" width="188" height="40" rx="8" class="acard"/>
+  <text x="316" y="145" font-size="11" class="t b">nearby</text>
+  <text x="316" y="160" font-size="10" class="t2">same problem within 50 m</text>
+  <rect x="306" y="176" width="188" height="40" rx="8" class="acard"/>
+  <text x="316" y="193" font-size="11" class="t b">create · 확인 +1</text>
+  <text x="316" y="208" font-size="10" class="t2">one transaction each</text>
+  <rect x="306" y="224" width="188" height="40" rx="8" class="acard"/>
+  <text x="316" y="241" font-size="11" class="t b">map · detail</text>
+  <text x="316" y="256" font-size="10" class="t2">one screen = one query</text>
+  <rect x="306" y="272" width="188" height="40" rx="8" class="acard"/>
+  <text x="316" y="289" font-size="11" class="t b">status · resolve</text>
+  <text x="316" y="304" font-size="10" class="t2">operator only</text>
+  <text x="306" y="340" font-size="10.5" class="ta b">calcPriority()</text>
+  <text x="306" y="356" font-size="10" class="ta">on every read and write,</text>
+  <text x="306" y="371" font-size="10" class="ta">the only place it lives</text>
+
+  <!-- supabase -->
+  <rect x="570" y="60" width="210" height="340" rx="12" class="box"/>
+  <text x="586" y="86" font-size="13.5" class="t b">Supabase</text>
+  <rect x="586" y="100" width="178" height="74" rx="8" class="card"/>
+  <text x="598" y="120" font-size="11.5" class="t b">Postgres + PostGIS</text>
+  <text x="598" y="138" font-size="10" class="t2">7 tables, closed enums</text>
+  <text x="598" y="156" font-size="10" class="tac">GIST index on geom</text>
+  <rect x="586" y="184" width="178" height="52" rx="8" class="card"/>
+  <text x="598" y="204" font-size="11.5" class="t b">Auth</text>
+  <text x="598" y="222" font-size="10" class="t2">operators only</text>
+  <rect x="586" y="246" width="178" height="52" rx="8" class="card"/>
+  <text x="598" y="266" font-size="11.5" class="t b">Realtime</text>
+  <text x="598" y="284" font-size="10" class="t2">live 12 → 13 (soon)</text>
+  <rect x="586" y="308" width="178" height="74" rx="8" class="card"/>
+  <text x="598" y="328" font-size="11.5" class="t b">Storage</text>
+  <text x="598" y="346" font-size="10" class="t2">before / after photos</text>
+  <text x="598" y="364" font-size="10" class="t2">DB keeps only the link</text>
+
+  <!-- outside -->
+  <rect x="820" y="100" width="160" height="74" rx="10" class="wbox"/>
+  <text x="834" y="122" font-size="11.5" class="tw b">Kakao Local</text>
+  <text x="834" y="140" font-size="10" class="tw">coordinates → address</text>
+  <text x="834" y="160" font-size="10" class="t3">optional</text>
+  <rect x="820" y="194" width="160" height="92" rx="10" class="wbox" stroke-dasharray="5 4"/>
+  <text x="834" y="216" font-size="11.5" class="tw b">AI · speech</text>
+  <text x="834" y="234" font-size="10" class="tw">photo → category</text>
+  <text x="834" y="250" font-size="10" class="tw">voice → draft</text>
+  <text x="834" y="272" font-size="10" class="t3">off, fails quietly</text>
+
+  <!-- request / answer -->
+  <path d="M250 110 L284 110" class="la" marker-end="url(#a)"/>
+  <path d="M250 320 L284 320" class="la" marker-end="url(#a)"/>
+  <path d="M510 136 L580 136" class="la" marker-end="url(#a)"/>
+  <text x="522" y="128" font-size="10" class="ta">SQL</text>
+  <path d="M510 210 L580 210" class="la" marker-end="url(#a)"/>
+  <text x="516" y="202" font-size="10" class="ta">token</text>
+  <path d="M500 60 L500 50 L900 50 L900 94" class="lw" marker-end="url(#w)"/>
+  <text x="560" y="42" font-size="10" class="tw">address for a new report, 3 s timeout</text>
+
+  <!-- photos straight to storage -->
+  <path d="M30 200 L16 200 L16 450 L675 450 L675 388" class="l d" marker-end="url(#g)"/>
+  <path d="M140 400 L140 450" class="l d"/>
+  <text x="180" y="442" font-size="10.5" class="t2">photos go straight to Storage; the API gets only the link</text>
+
+  <!-- legend -->
+  <line x1="30" y1="478" x2="970" y2="478" class="sep"/>
+  <line x1="34" y1="500" x2="66" y2="500" class="la"/>
+  <text x="74" y="504" font-size="10.5" class="t2">request → answer</text>
+  <line x1="300" y1="500" x2="332" y2="500" class="l d"/>
+  <text x="340" y="504" font-size="10.5" class="t2">straight to Supabase</text>
+  <line x1="580" y1="500" x2="612" y2="500" class="lw"/>
+  <text x="620" y="504" font-size="10.5" class="t2">outside service, may be down</text>
+</svg>
