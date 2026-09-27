@@ -1,7 +1,7 @@
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/logo-dark.svg">
-    <img src="./.github/assets/logo-light.svg" width="360" alt="동네 SOS">
+    <img src="./.github/assets/logo-light.svg" width="280" alt="Bumpy">
   </picture>
 </h1>
 
@@ -23,11 +23,14 @@
 
 ## What is this
 
-A fallen tree on the path, a broken sidewalk, a blocked ramp, a broken bench:
-small things that stop a wheelchair, a stroller or an older person.
+A broken sidewalk, a blocked ramp, a broken bench: small things that stop a
+wheelchair, a stroller, an older or a visually impaired person.
 
-Residents report them from their phone. The district office fixes them.
-Everyone sees the result.
+Today the same problem is reported many times, nobody knows what to fix
+first, and the resident never learns what happened.
+
+**Bumpy** is a report that takes one photo. Residents report from their
+phone. The district office fixes. Everyone sees the result.
 
 > **one problem → collective confirmation → numeric priority → closing the loop with a result photo**
 
@@ -35,7 +38,15 @@ A similar problem 50 m away is not a new report. It is a `확인 +1` on the old
 one. So the office gets **one** report with twenty confirmations, not twenty
 copies of the same hole.
 
-Made for the 2026 KW Hackathon (광운대학교), topic *배리어프리 및 생활편의*.
+Made for the 2026 KW Hackathon (광운대학교) by team **4guys**, topic
+*배리어프리 및 생활편의*.
+
+| | who | part |
+|---|---|---|
+| BE-1 | 장막심 | data core: database, create path, priority |
+| BE-2 | 아얀 | reads, admin, deploy |
+| FE-1 | 한안드레이 | report flow in the app |
+| FE-2 | 이막심 | browse screens in the app |
 
 ## How it works
 
@@ -91,15 +102,8 @@ Only the district operator logs in.
 
 ## Run it
 
-**The API.** Needs Node 22.18+ and the `.env` values from a teammate.
-
-```bash
-npm install
-cp .env.example .env     # fill in the values
-npm run dev              # http://localhost:3000
-```
-
-**The app.** Install Expo Go on your phone.
+**Try it in two minutes, no keys.** Needs Node 22.18+ and Expo Go on your
+phone (or press `w` for the browser).
 
 ```bash
 cd mobile
@@ -107,7 +111,26 @@ npm install
 npx expo start -c        # scan the QR code
 ```
 
-To use the real API, create `mobile/.env`:
+With no `.env` the app answers from
+[`contract/fixtures.json`](./contract/fixtures.json): every screen and the
+whole report flow work without a server.
+
+**The priority formula.** No database needed.
+
+```bash
+npm install
+npm test                 # 18 tests, including the reference case → 78
+```
+
+**The real API.** Needs the Supabase values in `.env`
+(see [`.env.example`](./.env.example)).
+
+```bash
+cp .env.example .env     # fill in the values
+npm run dev              # http://localhost:3000
+```
+
+Then point the app at it with `mobile/.env`:
 
 ```
 EXPO_PUBLIC_API_URL=http://192.168.x.x:3000
@@ -157,16 +180,44 @@ Shapes: [`contract/types.ts`](./contract/types.ts) · examples:
 server · four categories, no more · no keys in git or chat.**
 All the rules: [`CLAUDE.md`](./CLAUDE.md).
 
+## Plan vs code
+
+What the 중간발표 report says, and where it lives.
+
+**Done**
+
+| report | code |
+|---|---|
+| 9 APIs on the real database | [`src/server.ts`](./src/server.ts), Supabase PostgreSQL |
+| 50 m duplicate search with PostGIS | [`src/core/create.ts`](./src/core/create.ts) — `st_dwithin`, 50 m, last 30 days |
+| `확인 +1` in one transaction, once per device | [`src/core/create.ts`](./src/core/create.ts), `UNIQUE (report_id, device_id)` in [`db/migrations/0001_init.sql`](./db/migrations/0001_init.sql) |
+| priority on the server, 18 automated tests | [`src/core/priority.ts`](./src/core/priority.ts), [`priority.test.ts`](./src/core/priority.test.ts), [`seed-scores.test.ts`](./src/core/seed-scores.test.ts) |
+| home — problems nearby | [`mobile/src/app/index.tsx`](./mobile/src/app/index.tsx) |
+| map | [`mobile/src/app/map.tsx`](./mobile/src/app/map.tsx) |
+| detail — score breakdown, 진행 상황 | [`mobile/src/app/detail.tsx`](./mobile/src/app/detail.tsx) |
+| 내 신고 | [`mobile/src/app/reports.tsx`](./mobile/src/app/reports.tsx) |
+| report flow — camera, GPS, compression → problem → duplicate check → done | [`mobile/src/app/report/`](./mobile/src/app/report), compression 1280 px / q70 in [`mobile/src/report/photo.ts`](./mobile/src/report/photo.ts) |
+
+**Not done yet** — next, in this order
+
+| report | today |
+|---|---|
+| photo upload to Supabase Storage | sample images from the fixtures ([`mobile/src/api/upload.ts`](./mobile/src/api/upload.ts)) |
+| admin screen that closes a report with the result photo | the API is ready (endpoints 8 and 9), the screen is not |
+| AI photo classification, voice input | the place on the screen only; the resident fills in the form by hand ([`src/core/optional.ts`](./src/core/optional.ts)) |
+| server deploy | runs locally; [`railway.json`](./railway.json) is ready |
+
 ## Roadmap
 
 | | | |
 |---|---|---|
-| ✅ | contract, database, mobile screens | |
-| ✅ | API: all 9 endpoints on Supabase | |
-| ✅ | Kakao map in the app | |
-| 🔜 | deploy to Railway | |
-| 🔜 | real photos, admin web, live updates | |
-| 🎤 | demo | 28.09.2026 |
+| ✅ | contract, database, 9 APIs on Supabase | |
+| ✅ | app: home, map, detail, 내 신고, report flow | |
+| 🎤 | 중간발표 | 28.09.2026 |
+| 🔜 | photo upload to Supabase Storage | |
+| 🔜 | admin screen: close a report with the result photo | |
+| 🔜 | AI photo classification, voice input (3 s limit, then the form) | |
+| 🔜 | server deploy | |
 
 ## License
 
