@@ -31,6 +31,8 @@ export default function HomeScreen() {
   const { data, error, refreshing, refresh } = useLoad(() => getMap(DEMO_BBOX));
   const [category, setCategory] = useState<Category | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // The report whose 확인 +1 is in flight: a second tap must not send a second request.
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const nearby = (data?.reports ?? [])
     .filter((report) => report.status !== 'resolved')
@@ -42,11 +44,15 @@ export default function HomeScreen() {
     router.push(category ? { pathname: '/report', params: { category } } : '/report');
 
   const confirm = async (report: Report) => {
+    if (confirming) return;
+    setConfirming(report.id);
     try {
       await confirmReport(report.id);
       await refresh();
     } catch (e) {
       setNotice(e instanceof Error ? e.message : String(e));
+    } finally {
+      setConfirming(null);
     }
   };
 
@@ -113,7 +119,7 @@ export default function HomeScreen() {
             </View>
             <Pressable
               style={[styles.confirmChip, report.confirmed_by_me && styles.confirmedChip]}
-              disabled={report.confirmed_by_me}
+              disabled={report.confirmed_by_me || confirming !== null}
               onPress={() => confirm(report)}>
               {report.confirmed_by_me && <Icon name="check" size={14} color="#84908B" />}
               <Text style={[styles.confirmChipText, report.confirmed_by_me && styles.confirmedChipText]}>

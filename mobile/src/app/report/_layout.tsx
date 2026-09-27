@@ -3,7 +3,13 @@ import { Pressable, Text } from 'react-native';
 
 import { C } from '@/report/ui';
 
-/** Create path: 01 home → camera → 02 (1/2) → 03 duplicate (2/2) | done. */
+/**
+ * Create path: 01 home → camera → 02 (1/2) → 03 duplicate (2/2) | done.
+ *
+ * Leaving it always goes through router.dismissTo('/'): it pops back to the
+ * home screen already in the stack. router.replace('/') would put a second
+ * home screen on top of the first.
+ */
 export default function ReportLayout() {
   return (
     <Stack
@@ -15,7 +21,7 @@ export default function ReportLayout() {
         contentStyle: { backgroundColor: C.bg },
         headerBackButtonDisplayMode: 'minimal',
         headerRight: () => (
-          <Pressable onPress={() => router.replace('/')} hitSlop={12} accessibilityRole="button">
+          <Pressable onPress={() => router.dismissTo('/')} hitSlop={12} accessibilityRole="button">
             <Text style={{ color: C.textSoft, fontSize: 16 }}>취소</Text>
           </Pressable>
         ),
@@ -23,7 +29,8 @@ export default function ReportLayout() {
       <Stack.Screen name="index" options={{ title: '사진 찍기', headerShown: false }} />
       <Stack.Screen name="category" options={{ title: '신고 작성 1/2' }} />
       <Stack.Screen name="duplicate" options={{ title: '신고 작성 2/2' }} />
-      <Stack.Screen name="done" options={{ headerShown: false }} />
+      {/* No swipe back: behind done is the camera with the draft just sent. */}
+      <Stack.Screen name="done" options={{ headerShown: false, gestureEnabled: false }} />
     </Stack>
   );
 }

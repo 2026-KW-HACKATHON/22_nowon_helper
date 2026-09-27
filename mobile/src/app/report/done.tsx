@@ -1,6 +1,7 @@
 /** After 02 or 03 created a new report: the finished score from the server. */
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { BackHandler, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/icon';
@@ -10,6 +11,16 @@ import { C, PrimaryButton, SecondaryButton } from '@/report/ui';
 
 export default function DoneScreen() {
   const { created } = useDraft();
+
+  // Android back goes home too. Behind this screen is the camera with the
+  // draft just sent: a new shot there would reuse its severity and groups.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.dismissTo('/');
+      return true;
+    });
+    return () => sub.remove();
+  }, []);
 
   return (
     <SafeAreaView style={s.screen}>
@@ -36,7 +47,7 @@ export default function DoneScreen() {
             onPress={() => router.replace({ pathname: '/detail', params: { id: created.id } })}
           />
         ) : null}
-        <PrimaryButton label="홈으로" onPress={() => router.replace('/')} />
+        <PrimaryButton label="홈으로" onPress={() => router.dismissTo('/')} />
       </View>
     </SafeAreaView>
   );
